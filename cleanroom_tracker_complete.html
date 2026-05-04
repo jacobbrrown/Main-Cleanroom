@@ -1,0 +1,921 @@
+
+<h2 class="sr-only">Cleanroom process tracker — complete version with run logging, etch and deposition rate tracking, drift detection, and PI analytics dashboard</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary);background:var(--color-background-tertiary)}
+.topbar{background:#1B3A6B;color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:48px;flex-shrink:0}
+.topbar-title{font-size:14px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.role-chip{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.tabs{display:flex;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 20px;flex-shrink:0;flex-wrap:wrap}
+.tab{padding:10px 16px;font-size:13px;cursor:pointer;color:var(--color-text-secondary);border:none;border-bottom:2px solid transparent;margin-bottom:-0.5px;background:none;font-family:var(--font-sans);white-space:nowrap}
+.tab.active{color:var(--color-text-primary);border-bottom-color:#1B3A6B;font-weight:500}
+.main{padding:16px 20px;max-width:900px;margin:0 auto}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.mlabel{font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.mval{font-size:22px;font-weight:500;line-height:1}
+.msub{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{font-size:13px;font-family:var(--font-sans);color:var(--color-text-primary);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 10px;width:100%}
+textarea{height:56px;resize:vertical}
+.btn{padding:8px 16px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans);transition:opacity .15s;border:none}
+.btn-p{background:#1B3A6B;color:#fff}.btn-p:hover{opacity:.88}.btn-p:disabled{opacity:.45;cursor:not-allowed}
+.btn-g{background:none;border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary)}.btn-g:hover{background:var(--color-background-secondary)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.bg{background:#EAF3DE;color:#27500A}.ba{background:#FAEEDA;color:#633806}.br{background:#FCEBEB;color:#791F1F}.bb{background:#E6F1FB;color:#0C447C}.bgr{background:#F1EFE8;color:#444441}.bt{background:#E1F5EE;color:#085041}
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:none;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.pill.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:transparent}
+.frow{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.frow select,.frow input{width:auto;font-size:12px}
+.alert{padding:10px 14px;margin-bottom:10px;font-size:12px;border-left:3px solid;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
+.alert-w{background:#FAEEDA;border-color:#EF9F27;color:#633806}
+.alert-d{background:#FCEBEB;border-color:#E24B4A;color:#791F1F}
+.alert-i{background:#E6F1FB;border-color:#378ADD;color:#0C447C}
+.alert-title{font-weight:500;margin-bottom:2px;font-size:12px}
+.rrow{display:flex;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);align-items:flex-start}
+.rrow:last-child{border-bottom:none}
+.rdot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.rbody{flex:1;min-width:0}
+.rtitle{font-size:13px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rmeta{font-size:11px;color:var(--color-text-secondary)}
+.drow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);flex-wrap:wrap}
+.drow:last-child{border-bottom:none}
+.dtool{font-size:12px;font-weight:500;min-width:140px}
+.drecipe{font-size:11px;color:var(--color-text-secondary);min-width:120px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbar-bg{flex:1;min-width:60px;height:6px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden}
+.dbar-fill{height:100%;border-radius:3px}
+.dval{font-size:12px;font-weight:500;min-width:48px;text-align:right}
+.srow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.srow:last-child{border-bottom:none}
+.slabel{min-width:170px}
+.slabel-main{font-size:12px;font-weight:500}
+.slabel-sub{font-size:11px;color:var(--color-text-secondary)}
+.swrap{flex:1;position:relative;height:38px}
+.sstat{min-width:72px;text-align:right}
+.sstat-val{font-size:13px;font-weight:500}
+.sstat-sub{font-size:11px;color:var(--color-text-secondary)}
+.pbar-bg{flex:1;height:7px;background:var(--color-border-tertiary);border-radius:4px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:4px}
+.lrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lrow:last-child{border-bottom:none}
+.avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.cw{position:relative;width:100%}
+.cw.h200{height:200px}.cw.h180{height:180px}.cw.h160{height:160px}
+.sdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--color-border-tertiary);margin-right:3px}
+.sdot.on{background:#0F6E56}
+.preview-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:14px;display:none}
+.trend-up::before{content:"↑ ";font-size:10px}
+.trend-dn::before{content:"↓ ";font-size:10px}
+.trend-fl::before{content:"→ ";font-size:10px}
+.toast{position:fixed;bottom:16px;right:16px;background:#0F6E56;color:#E1F5EE;padding:10px 16px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}.toast.err{background:#A32D2D}
+@media(max-width:540px){.g2,.g3{grid-template-columns:1fr}.dtool,.drecipe{min-width:80px}}
+</style>
+
+<div class="topbar">
+  <div class="topbar-title">Cleanroom Process Tracker</div>
+  <div class="topbar-right">
+    <span style="color:rgba(255,255,255,.7);font-size:12px" id="tb-user">A. Patel</span>
+    <span class="role-chip" id="tb-role" style="background:#0E7C86">user</span>
+    <button class="pill" style="color:#fff;border-color:rgba(255,255,255,.3);font-size:11px;padding:3px 10px" onclick="toggleRole()">Switch role</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('log',this)">Log run</button>
+  <button class="tab" onclick="switchTab('rates',this)">Log rates</button>
+  <button class="tab" onclick="switchTab('history',this)">My runs</button>
+  <button class="tab" onclick="switchTab('pi',this)">PI dashboard</button>
+</div>
+
+<div class="main">
+
+<!-- ══ TAB: LOG RUN ══════════════════════════════════════════════════════ -->
+<div id="t-log">
+  <div id="notices-area" style="margin-bottom:2px"></div>
+  <div class="card" style="border-left:3px solid #1B3A6B;padding-left:15px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:500;margin-bottom:3px">Log a process run</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">Fields marked <span style="color:#A32D2D">*</span> required · everything else optional but valuable</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;font-weight:500;color:#0F6E56" id="slbl">Streak: 4 days</div>
+        <div style="margin-top:5px" id="sdots"></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Zone <span style="color:#A32D2D">*</span></label>
+        <select id="f-zone"><option value="">Select zone…</option><option>Zone A — Lithography</option><option>Zone B — Deposition &amp; Etch</option><option>Zone C — Metrology &amp; Prep</option></select></div>
+      <div class="field"><label>Tool <span style="color:#A32D2D">*</span></label>
+        <select id="f-tool"><option value="">Select tool…</option><option>Mask aligner (MA6)</option><option>Stepper (i-line)</option><option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>PECVD</option><option>Thermal evaporator</option><option>E-beam evaporator</option><option>Spin coater</option><option>Wet bench (acids)</option><option>SEM</option><option>Profilometer</option></select></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Outcome <span style="color:#A32D2D">*</span></label>
+        <select id="f-outcome"><option value="">Select…</option><option value="pass">Pass</option><option value="partial">Partial pass</option><option value="fail">Fail</option><option value="aborted">Aborted</option></select></div>
+      <div class="field"><label>Process / recipe</label>
+        <input id="f-proc" type="text" placeholder="e.g. AZ1512 spin 4000 rpm"></div>
+    </div>
+    <div class="g3">
+      <div class="field"><label>Duration (min)</label><input id="f-dur" type="number" min="0" placeholder="45"></div>
+      <div class="field"><label>Samples</label><input id="f-samp" type="number" min="1" placeholder="4"></div>
+      <div class="field"><label>Yield (%)</label><input id="f-yield" type="number" min="0" max="100" placeholder="75"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>SOP deviation</label>
+        <select id="f-dev"><option value="none">None</option><option value="minor">Minor</option><option value="major">Major</option></select></div>
+      <div class="field"><label>PPE compliance</label>
+        <select id="f-ppe"><option value="full">Full</option><option value="minor-gap">Minor gap</option><option value="non-compliant">Non-compliant</option></select></div>
+    </div>
+    <div class="field"><label>Process parameters</label>
+      <textarea id="f-params" placeholder="e.g. RF: 100W | Pressure: 50mTorr | CF4: 20sccm | Temp: 300°C"></textarea></div>
+    <div class="field" style="margin-bottom:16px"><label>Notes / anomalies</label>
+      <textarea id="f-notes" placeholder="Anything unusual — tool quirks, unexpected results, contamination concerns…"></textarea></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-p" id="log-btn" onclick="submitRun()">Submit run</button>
+      <button class="btn btn-g" onclick="clearLogForm()">Clear</button>
+    </div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,var(--color-background-primary),var(--color-background-secondary))">
+    <div class="card-title">Why log every run?</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+      <div><div style="font-size:13px;font-weight:500;margin-bottom:4px">Spot drift early</div><div style="font-size:12px;color:var(--color-text-secondary)">Yield trends reveal tool degradation before it ruins a batch.</div></div>
+      <div><div style="font-size:13px;font-weight:500;margin-bottom:4px">Protect your research</div><div style="font-size:12px;color:var(--color-text-secondary)">Logged parameters are your evidence at write-up when results look unexpected.</div></div>
+      <div><div style="font-size:13px;font-weight:500;margin-bottom:4px">Priority scheduling</div><div style="font-size:12px;color:var(--color-text-secondary)">Consistent loggers earn priority booking each term.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB: LOG RATES ════════════════════════════════════════════════════ -->
+<div id="t-rates" style="display:none">
+  <div class="card" style="border-left:3px solid #0E7C86;padding-left:15px">
+    <div style="font-size:15px;font-weight:500;margin-bottom:3px">Log an etch or deposition rate</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:16px">Rates are compared against the rolling median of the last 10 accepted measurements for that recipe to detect drift automatically.</div>
+    <div class="g2">
+      <div class="field"><label>Tool <span style="color:#A32D2D">*</span></label>
+        <select id="r-tool" onchange="previewDrift()">
+          <option value="">Select tool…</option>
+          <optgroup label="Etch"><option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>Wet bench (acids)</option></optgroup>
+          <optgroup label="Deposition"><option>PECVD</option><option>Thermal evaporator</option><option>E-beam evaporator</option></optgroup>
+        </select></div>
+      <div class="field"><label>Process type <span style="color:#A32D2D">*</span></label>
+        <select id="r-type"><option value="">Select…</option><option value="etch">Etch</option><option value="deposition">Deposition</option></select></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Recipe / material <span style="color:#A32D2D">*</span></label>
+        <input id="r-recipe" type="text" placeholder="e.g. SiO2 etch CF4/CHF3" oninput="previewDrift()"></div>
+      <div class="field"><label>Measurement method</label>
+        <select id="r-meth"><option value="profilometer">Profilometer (step height)</option><option value="reflectometry">Reflectometry / ellipsometry</option><option value="weight-loss">Weight loss</option><option value="sem-cross">SEM cross-section</option><option value="qcm">QCM (in-situ)</option><option value="other">Other</option></select></div>
+    </div>
+    <div class="g3">
+      <div class="field"><label>Measured rate <span style="color:#A32D2D">*</span></label>
+        <input id="r-meas" type="number" min="0" step="0.01" placeholder="e.g. 42.5" oninput="previewDrift()"></div>
+      <div class="field"><label>Unit</label>
+        <select id="r-unit"><option value="nm/min">nm / min</option><option value="Å/s">Å / s</option><option value="nm/s">nm / s</option><option value="µm/min">µm / min</option><option value="Å/min">Å / min</option></select></div>
+      <div class="field"><label>Target rate (optional)</label>
+        <input id="r-tgt" type="number" min="0" step="0.01" placeholder="leave blank to use baseline"></div>
+    </div>
+
+    <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Process conditions at time of measurement</div>
+    <div class="g3">
+      <div class="field"><label>Power (W)</label><input id="r-pow" type="number" placeholder="e.g. 100"></div>
+      <div class="field"><label>Pressure (mTorr)</label><input id="r-pres" type="number" placeholder="e.g. 50"></div>
+      <div class="field"><label>Temperature (°C)</label><input id="r-temp" type="number" placeholder="e.g. 300"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Gas flow (sccm)</label><input id="r-flow" type="number" placeholder="e.g. 30"></div>
+      <div class="field"><label>Sample run time (min)</label><input id="r-rt" type="number" placeholder="e.g. 5"></div>
+    </div>
+    <div class="field" style="margin-bottom:14px"><label>Notes</label>
+      <textarea id="r-notes" placeholder="e.g. Post-clean baseline · target 80% life · first run after vent…"></textarea></div>
+
+    <div class="preview-box" id="drift-preview">
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Drift preview vs rolling baseline</div>
+      <div id="drift-preview-body"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-p" id="rate-btn" onclick="submitRate()">Log rate</button>
+      <button class="btn btn-g" onclick="clearRateForm()">Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">Rate measurement history</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="rh-tool" onchange="renderRateHistory()" style="font-size:12px;width:auto"><option value="">All tools</option><option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>PECVD</option><option>Thermal evaporator</option><option>E-beam evaporator</option></select>
+        <select id="rh-type" onchange="renderRateHistory()" style="font-size:12px;width:auto"><option value="">All types</option><option value="etch">Etch</option><option value="deposition">Deposition</option></select>
+      </div>
+    </div>
+    <div id="rate-hist-list"></div>
+  </div>
+</div>
+
+<!-- ══ TAB: MY RUNS ══════════════════════════════════════════════════════ -->
+<div id="t-history" style="display:none">
+  <div class="frow">
+    <input id="h-search" placeholder="Filter by tool or process…" style="width:190px" oninput="renderHistory()">
+    <select id="h-oc" onchange="renderHistory()" style="width:auto">
+      <option value="">All outcomes</option><option value="pass">Pass</option><option value="partial">Partial</option><option value="fail">Fail</option><option value="aborted">Aborted</option>
+    </select>
+    <span id="h-count" style="font-size:12px;color:var(--color-text-secondary)"></span>
+  </div>
+  <div id="hist-list"></div>
+</div>
+
+<!-- ══ TAB: PI DASHBOARD ════════════════════════════════════════════════ -->
+<div id="t-pi" style="display:none">
+  <div class="frow">
+    <div class="pills" id="day-pills">
+      <button class="pill" data-d="7" onclick="setPill(this)">7 days</button>
+      <button class="pill active" data-d="30" onclick="setPill(this)">30 days</button>
+      <button class="pill" data-d="90" onclick="setPill(this)">90 days</button>
+    </div>
+    <select id="pi-zone" onchange="renderPI()" style="width:auto;font-size:12px">
+      <option value="">All zones</option><option>Zone A — Lithography</option><option>Zone B — Deposition &amp; Etch</option><option>Zone C — Metrology &amp; Prep</option>
+    </select>
+  </div>
+
+  <div class="metrics" id="pi-kpis"></div>
+  <div id="pi-alerts" style="margin-bottom:14px"></div>
+
+  <div class="g2">
+    <div class="card"><div class="card-title">Pass rate over time</div>
+      <div class="cw h200"><canvas id="c-yield" role="img" aria-label="Line chart of daily pass rate over selected period"></canvas></div></div>
+    <div class="card"><div class="card-title">Runs by tool</div>
+      <div class="cw h200"><canvas id="c-tools" role="img" aria-label="Horizontal bar chart of run counts per tool"></canvas></div></div>
+  </div>
+
+  <!-- Rate drift panel -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">Etch &amp; deposition rate drift</div>
+      <div class="pills" id="rt-pills">
+        <button class="pill active" data-rt="" onclick="setRTPill(this)">All</button>
+        <button class="pill" data-rt="etch" onclick="setRTPill(this)">Etch</button>
+        <button class="pill" data-rt="deposition" onclick="setRTPill(this)">Deposition</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:12px">Deviation of the most recent measurement from the rolling median of the last 10 readings for that recipe. Arrow shows 3-point trend direction.</div>
+    <div style="display:flex;gap:14px;font-size:11px;color:var(--color-text-secondary);margin-bottom:12px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Within ±10% — normal</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#EF9F27;display:inline-block"></span>±10–25% — monitor closely</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#E24B4A;display:inline-block"></span>&gt;25% — investigate immediately</span>
+    </div>
+    <div id="drift-panel"></div>
+  </div>
+
+  <!-- Sparklines -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">Rate history by recipe</div>
+      <select id="sp-tool" onchange="renderSparklines()" style="font-size:12px;width:auto">
+        <option value="">All tools</option><option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>PECVD</option><option>Thermal evaporator</option><option>E-beam evaporator</option>
+      </select>
+    </div>
+    <div id="sp-panel"></div>
+  </div>
+
+  <!-- Correlation -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">Rate vs process condition</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="cr-recipe" onchange="renderCorr()" style="font-size:12px;width:auto"><option value="">Select recipe…</option></select>
+        <select id="cr-param" onchange="renderCorr()" style="font-size:12px;width:auto">
+          <option value="power">vs Power (W)</option><option value="pressure">vs Pressure (mTorr)</option><option value="temp">vs Temperature (°C)</option><option value="flow">vs Gas flow (sccm)</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Each dot is one measurement. Dot colour matches drift status. Dashed line shows rolling baseline. Use this to check whether rate drift correlates with a specific process variable.</div>
+    <div class="cw h200"><canvas id="c-corr" role="img" aria-label="Scatter plot of measured rate versus selected process parameter for the chosen recipe"></canvas></div>
+    <div id="corr-hint" style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;display:none"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Outcome breakdown</div>
+      <div id="oc-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--color-text-secondary)"></div>
+      <div class="cw h180"><canvas id="c-oc" role="img" aria-label="Doughnut chart of run outcome proportions"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">PPE compliance</div>
+      <div id="ppe-bars" style="margin-top:6px"></div>
+      <div style="border-top:0.5px solid var(--color-border-tertiary);margin-top:14px;padding-top:12px">
+        <div class="card-title">Contributor leaderboard</div>
+        <div id="pi-lb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PI: Post notice -->
+  <div class="card">
+    <div class="card-title">Post a notice to users</div>
+    <div class="g2">
+      <div class="field"><label>Title</label><input id="n-title" type="text" placeholder="e.g. RIE chamber — expect lower yields"></div>
+      <div class="field"><label>Zone (blank = all)</label>
+        <select id="n-zone"><option value="">All zones</option><option>Zone A — Lithography</option><option>Zone B — Deposition &amp; Etch</option><option>Zone C — Metrology &amp; Prep</option></select></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Severity</label>
+        <select id="n-sev"><option value="info">Info</option><option value="warning">Warning</option><option value="danger">Danger</option></select></div>
+      <div class="field"><label>Expires (optional)</label><input id="n-exp" type="date"></div>
+    </div>
+    <div class="field" style="margin-bottom:12px"><label>Body</label><textarea id="n-body" placeholder="Details for users…"></textarea></div>
+    <button class="btn btn-p" style="font-size:12px;padding:6px 14px" onclick="postNotice()">Post notice</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── Palette ───────────────────────────────────────────────────────────────
+const C={green:'#1D9E75',amber:'#EF9F27',red:'#E24B4A',blue:'#185FA5',gray:'#888780',navy:'#1B3A6B',teal:'#0E7C86'};
+const SERIES_C=['#185FA5','#0F6E56','#854F0B','#A32D2D','#533BA7','#1D9E75','#D85A30','#0E7C86'];
+const OC_C=['#1D9E75','#EF9F27','#E24B4A','#888780'];
+const LB_BG=['#E6F1FB','#EAF3DE','#FAEEDA','#FCEBEB','#EDE9FE'];
+const LB_FG=['#0C447C','#27500A','#633806','#791F1F','#3C3489'];
+
+let chartReg={}, piDays=30, rtFilter='', currentRole='user';
+
+// ── Demo runs ─────────────────────────────────────────────────────────────
+let RUNS=[
+  {id:1,user:'A. Patel',zone:'Zone A — Lithography',tool:'Mask aligner (MA6)',process:'AZ1512 spin',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:50,samples:4,dt:'2025-04-27',params:'Spin: 4000rpm | Bake: 100°C 60s',notes:''},
+  {id:2,user:'A. Patel',zone:'Zone A — Lithography',tool:'Mask aligner (MA6)',process:'AZ1512 spin',outcome:'partial',deviation:'minor',ppe:'full',yield:75,duration:52,samples:4,dt:'2025-04-28',params:'',notes:'Edge bead on one sample'},
+  {id:3,user:'R. Chen',zone:'Zone B — Deposition & Etch',tool:'RIE etcher (Oxford)',process:'SiO2 etch CF4/CHF3',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:35,samples:6,dt:'2025-04-26',params:'CF4:20 CHF3:10 100W 50mTorr',notes:''},
+  {id:4,user:'R. Chen',zone:'Zone B — Deposition & Etch',tool:'RIE etcher (Oxford)',process:'SiO2 etch CF4/CHF3',outcome:'partial',deviation:'none',ppe:'full',yield:83,duration:38,samples:6,dt:'2025-04-27',params:'',notes:'Etch rate slightly low'},
+  {id:5,user:'B. Novak',zone:'Zone A — Lithography',tool:'Spin coater',process:'SU-8 2025',outcome:'partial',deviation:'major',ppe:'minor-gap',yield:50,duration:25,samples:2,dt:'2025-04-28',params:'2000rpm | 95°C 3min',notes:'Edge delamination'},
+  {id:6,user:'J. Williams',zone:'Zone B — Deposition & Etch',tool:'Thermal evaporator',process:'Au deposition',outcome:'partial',deviation:'none',ppe:'full',yield:80,duration:45,samples:5,dt:'2025-04-28',params:'Rate:0.5Å/s',notes:'Slight non-uniformity'},
+  {id:7,user:'J. Williams',zone:'Zone B — Deposition & Etch',tool:'Thermal evaporator',process:'Au deposition',outcome:'partial',deviation:'none',ppe:'full',yield:60,duration:47,samples:5,dt:'2025-04-29',params:'Rate:0.5Å/s',notes:'Uniformity worse. Filament age?'},
+  {id:8,user:'A. Patel',zone:'Zone A — Lithography',tool:'Mask aligner (MA6)',process:'AZ1512 spin',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:51,samples:4,dt:'2025-04-29',params:'',notes:''},
+  {id:9,user:'R. Chen',zone:'Zone B — Deposition & Etch',tool:'PECVD',process:'SiN deposition',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:90,samples:4,dt:'2025-04-29',params:'SiH4:20 NH3:20 N2:500 20W 300°C',notes:''},
+  {id:10,user:'B. Novak',zone:'Zone A — Lithography',tool:'Stepper (i-line)',process:'1µm litho',outcome:'fail',deviation:'minor',ppe:'full',yield:0,duration:70,samples:3,dt:'2025-04-30',params:'',notes:'Complete resolution failure'},
+  {id:11,user:'L. Okafor',zone:'Zone C — Metrology & Prep',tool:'Profilometer',process:'Step height',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:20,samples:8,dt:'2025-04-26',params:'',notes:''},
+  {id:12,user:'L. Okafor',zone:'Zone C — Metrology & Prep',tool:'SEM',process:'Cross-section imaging',outcome:'pass',deviation:'none',ppe:'full',yield:100,duration:60,samples:3,dt:'2025-04-28',params:'5kV | WD:10mm',notes:''},
+];
+
+// ── Demo rate measurements ────────────────────────────────────────────────
+let RATES=[
+  // RIE — gradual etch rate decline (chamber condition degrading)
+  {id:1, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:45.2,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'Post-clean baseline',dt:'2025-04-01'},
+  {id:2, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:44.8,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'',dt:'2025-04-05'},
+  {id:3, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:45.5,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'',dt:'2025-04-10'},
+  {id:4, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:44.1,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'',dt:'2025-04-15'},
+  {id:5, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:43.2,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'Slight drop',dt:'2025-04-20'},
+  {id:6, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:41.5,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'Continuing to drop',dt:'2025-04-25'},
+  {id:7, tool:'RIE etcher (Oxford)',type:'etch',recipe:'SiO2 etch CF4/CHF3',measured:38.8,unit:'nm/min',target:45,power:100,pressure:50,temp:null,flow:30,rt:5,notes:'Significant — chamber clean needed?',dt:'2025-04-30'},
+  // PECVD — stable
+  {id:8, tool:'PECVD',type:'deposition',recipe:'SiN PECVD 300°C',measured:12.1,unit:'nm/min',target:12,power:20,pressure:900,temp:300,flow:540,rt:10,notes:'',dt:'2025-04-02'},
+  {id:9, tool:'PECVD',type:'deposition',recipe:'SiN PECVD 300°C',measured:12.3,unit:'nm/min',target:12,power:20,pressure:900,temp:300,flow:540,rt:10,notes:'',dt:'2025-04-08'},
+  {id:10,tool:'PECVD',type:'deposition',recipe:'SiN PECVD 300°C',measured:11.9,unit:'nm/min',target:12,power:20,pressure:900,temp:300,flow:540,rt:10,notes:'',dt:'2025-04-14'},
+  {id:11,tool:'PECVD',type:'deposition',recipe:'SiN PECVD 300°C',measured:12.0,unit:'nm/min',target:12,power:20,pressure:900,temp:300,flow:540,rt:10,notes:'',dt:'2025-04-21'},
+  {id:12,tool:'PECVD',type:'deposition',recipe:'SiN PECVD 300°C',measured:12.2,unit:'nm/min',target:12,power:20,pressure:900,temp:300,flow:540,rt:10,notes:'',dt:'2025-04-28'},
+  // Thermal evaporator — filament ageing (deposition rate dropping + pressure creeping)
+  {id:13,tool:'Thermal evaporator',type:'deposition',recipe:'Au deposition',measured:0.52,unit:'Å/s',target:0.5,power:null,pressure:2.1,temp:null,flow:null,rt:10,notes:'',dt:'2025-04-03'},
+  {id:14,tool:'Thermal evaporator',type:'deposition',recipe:'Au deposition',measured:0.51,unit:'Å/s',target:0.5,power:null,pressure:2.2,temp:null,flow:null,rt:10,notes:'',dt:'2025-04-10'},
+  {id:15,tool:'Thermal evaporator',type:'deposition',recipe:'Au deposition',measured:0.49,unit:'Å/s',target:0.5,power:null,pressure:2.1,temp:null,flow:null,rt:10,notes:'',dt:'2025-04-17'},
+  {id:16,tool:'Thermal evaporator',type:'deposition',recipe:'Au deposition',measured:0.46,unit:'Å/s',target:0.5,power:null,pressure:2.5,temp:null,flow:null,rt:10,notes:'Filament aging?',dt:'2025-04-24'},
+  {id:17,tool:'Thermal evaporator',type:'deposition',recipe:'Au deposition',measured:0.42,unit:'Å/s',target:0.5,power:null,pressure:3.1,temp:null,flow:null,rt:10,notes:'Rate drop + pressure creep',dt:'2025-04-30'},
+  // DRIE — healthy
+  {id:18,tool:'DRIE (Bosch)',type:'etch',recipe:'Si Bosch DRIE',measured:2.8,unit:'µm/min',target:3.0,power:600,pressure:30,temp:20,flow:400,rt:3,notes:'',dt:'2025-04-05'},
+  {id:19,tool:'DRIE (Bosch)',type:'etch',recipe:'Si Bosch DRIE',measured:2.9,unit:'µm/min',target:3.0,power:600,pressure:30,temp:20,flow:400,rt:3,notes:'',dt:'2025-04-12'},
+  {id:20,tool:'DRIE (Bosch)',type:'etch',recipe:'Si Bosch DRIE',measured:3.1,unit:'µm/min',target:3.0,power:600,pressure:30,temp:20,flow:400,rt:3,notes:'',dt:'2025-04-19'},
+  {id:21,tool:'DRIE (Bosch)',type:'etch',recipe:'Si Bosch DRIE',measured:3.0,unit:'µm/min',target:3.0,power:600,pressure:30,temp:20,flow:400,rt:3,notes:'',dt:'2025-04-26'},
+  // E-beam — SiO2 deposition — stable
+  {id:22,tool:'E-beam evaporator',type:'deposition',recipe:'SiO2 e-beam',measured:2.1,unit:'Å/s',target:2.0,power:null,pressure:1.8,temp:null,flow:null,rt:5,notes:'',dt:'2025-04-07'},
+  {id:23,tool:'E-beam evaporator',type:'deposition',recipe:'SiO2 e-beam',measured:2.0,unit:'Å/s',target:2.0,power:null,pressure:1.9,temp:null,flow:null,rt:5,notes:'',dt:'2025-04-14'},
+  {id:24,tool:'E-beam evaporator',type:'deposition',recipe:'SiO2 e-beam',measured:2.2,unit:'Å/s',target:2.0,power:null,pressure:1.7,temp:null,flow:null,rt:5,notes:'',dt:'2025-04-21'},
+  {id:25,tool:'E-beam evaporator',type:'deposition',recipe:'SiO2 e-beam',measured:2.1,unit:'Å/s',target:2.0,power:null,pressure:1.8,temp:null,flow:null,rt:5,notes:'',dt:'2025-04-28'},
+];
+
+let NOTICES=[
+  {id:1,title:'RIE etcher (Oxford) — etch rate declining',body:'SiO2 CF4/CHF3 rate has dropped ~14% over the past 4 weeks. Please log a calibration run before your next etch and report the rate. Chamber clean scheduled for 5 May.',sev:'warning',zone:'Zone B — Deposition & Etch',author:'Prof. M. Singh',dt:'2025-04-30'},
+  {id:2,title:'Thermal evaporator — filament replacement due',body:'Au deposition rate declining and base pressure creeping up. Filament replacement scheduled after current bookings. Use e-beam for critical depositions in the interim.',sev:'danger',zone:'Zone B — Deposition & Etch',author:'Facility Manager',dt:'2025-04-29'},
+];
+
+// ── Baseline & drift computation ──────────────────────────────────────────
+function rollingMedian(arr, n=10){
+  const w=[...arr].slice(-n).sort((a,b)=>a-b);
+  if(!w.length) return null;
+  const m=Math.floor(w.length/2);
+  return w.length%2 ? w[m] : (w[m-1]+w[m])/2;
+}
+
+function enrichRates(rates){
+  const byKey={};
+  rates.forEach(r=>{
+    const k=`${r.tool}||${r.recipe}`;
+    (byKey[k]=byKey[k]||[]).push(r);
+  });
+  return rates.map(r=>{
+    const k=`${r.tool}||${r.recipe}`;
+    const history=byKey[k].filter(x=>x.dt<r.dt).map(x=>x.measured);
+    const baseline=rollingMedian(history);
+    const drift=baseline!=null ? (r.measured-baseline)/baseline*100 : null;
+    return {...r,baseline,drift};
+  });
+}
+
+function getDriftColor(abs){return abs==null?C.gray:abs<=10?C.green:abs<=25?C.amber:C.red;}
+
+function trendDir(rates, key){
+  const rs=rates.slice(-3);
+  if(rs.length<2) return 'flat';
+  const d=rs[rs.length-1][key]-rs[0][key];
+  if(Math.abs(d)<rs[0][key]*0.02) return 'flat';
+  return d>0?'up':'down';
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n,d=1){return n==null?'—':parseFloat(n).toFixed(d);}
+function fmtPct(n){return n==null?'—':fmt(n,1)+'%';}
+let _tt;
+function toast(msg,err=false){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show'+(err?' err':'');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.className='toast',2800);
+}
+function killChart(id){if(chartReg[id]){chartReg[id].destroy();delete chartReg[id];}}
+
+// ── Role toggle ───────────────────────────────────────────────────────────
+function toggleRole(){
+  currentRole=currentRole==='user'?'pi':'user';
+  document.getElementById('tb-user').textContent=currentRole==='pi'?'Prof. K. Balram':'J. Brown';
+  document.getElementById('tb-role').textContent=currentRole;
+  document.getElementById('tb-role').style.background=currentRole==='pi'?'#533BA7':'#0E7C86';
+}
+
+// ── Streak ────────────────────────────────────────────────────────────────
+(function(){
+  const n=4;
+  document.getElementById('slbl').textContent=`Streak: ${n} days`;
+  document.getElementById('sdots').innerHTML=
+    Array.from({length:7},(_,i)=>`<span class="sdot${i<n?' on':''}"></span>`).join('');
+})();
+
+// ── Notices ───────────────────────────────────────────────────────────────
+function renderNotices(){
+  const area=document.getElementById('notices-area');
+  const zone=document.getElementById('f-zone')?.value||'';
+  const visible=NOTICES.filter(n=>!n.zone||!zone||n.zone===zone);
+  area.innerHTML=visible.map(n=>`
+    <div class="alert alert-${n.sev}" style="margin-bottom:10px">
+      <div class="alert-title">${esc(n.title)}</div>
+      <div>${esc(n.body)}</div>
+      <div style="font-size:11px;color:inherit;opacity:.7;margin-top:4px">${esc(n.author)} · ${n.dt}</div>
+    </div>`).join('');
+}
+renderNotices();
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(name, btn){
+  ['log','rates','history','pi'].forEach(t=>document.getElementById(`t-${t}`).style.display='none');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`t-${name}`).style.display='block';
+  if(btn) btn.classList.add('active');
+  if(name==='history') renderHistory();
+  if(name==='rates') renderRateHistory();
+  if(name==='pi'){ buildRecipeDropdown(); renderPI(); renderDriftPanel(); renderSparklines(); renderCorr(); }
+}
+
+// ── Log run ───────────────────────────────────────────────────────────────
+function submitRun(){
+  const zone=document.getElementById('f-zone').value;
+  const tool=document.getElementById('f-tool').value;
+  const outcome=document.getElementById('f-outcome').value;
+  if(!zone||!tool||!outcome){toast('Zone, tool and outcome are required.',true);return;}
+  const btn=document.getElementById('log-btn');
+  btn.disabled=true; btn.textContent='Submitting…';
+  setTimeout(()=>{
+    RUNS.unshift({id:Date.now(),user:'A. Patel',zone,tool,outcome,
+      process:document.getElementById('f-proc').value,
+      deviation:document.getElementById('f-dev').value,
+      ppe:document.getElementById('f-ppe').value,
+      yield:parseFloat(document.getElementById('f-yield').value)||null,
+      duration:parseFloat(document.getElementById('f-dur').value)||null,
+      samples:parseInt(document.getElementById('f-samp').value)||null,
+      params:document.getElementById('f-params').value,
+      notes:document.getElementById('f-notes').value,
+      dt:new Date().toISOString().split('T')[0]});
+    toast('Run logged ✓'); clearLogForm();
+    btn.disabled=false; btn.textContent='Submit run';
+  },350);
+}
+function clearLogForm(){
+  ['f-zone','f-tool','f-outcome','f-dev','f-ppe'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['f-proc','f-dur','f-samp','f-yield','f-params','f-notes'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── Log rate ──────────────────────────────────────────────────────────────
+function previewDrift(){
+  const tool=document.getElementById('r-tool').value;
+  const recipe=document.getElementById('r-recipe').value.trim();
+  const meas=parseFloat(document.getElementById('r-meas').value);
+  const box=document.getElementById('drift-preview');
+  const body=document.getElementById('drift-preview-body');
+  if(!tool||!recipe||isNaN(meas)){box.style.display='none';return;}
+  const enriched=enrichRates(RATES);
+  const history=enriched.filter(r=>r.tool===tool&&r.recipe===recipe).map(r=>r.measured);
+  const baseline=rollingMedian(history);
+  if(!baseline){
+    body.innerHTML=`<div style="font-size:12px;color:var(--color-text-secondary)">No prior measurements for this recipe yet — this will become the first baseline point.</div>`;
+    box.style.display='block'; return;
+  }
+  const drift=(meas-baseline)/baseline*100;
+  const abs=Math.abs(drift);
+  const col=getDriftColor(abs);
+  const lbl=abs<=10?'Within tolerance':abs<=25?'Monitor closely':'Investigate immediately';
+  const unit=document.getElementById('r-unit').value;
+  body.innerHTML=`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end">
+    <div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:2px">Rolling baseline</div><div style="font-size:18px;font-weight:500">${fmt(baseline,2)} <span style="font-size:11px;color:var(--color-text-secondary)">${esc(unit)}</span></div></div>
+    <div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:2px">Your value</div><div style="font-size:18px;font-weight:500">${fmt(meas,2)} <span style="font-size:11px;color:var(--color-text-secondary)">${esc(unit)}</span></div></div>
+    <div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:2px">Drift</div><div style="font-size:18px;font-weight:500;color:${col}">${drift>=0?'+':''}${fmt(drift,1)}%</div></div>
+    <span class="badge" style="background:${col}22;color:${col};align-self:center">${lbl}</span>
+  </div>`;
+  box.style.display='block';
+}
+
+function submitRate(){
+  const tool=document.getElementById('r-tool').value;
+  const type=document.getElementById('r-type').value;
+  const recipe=document.getElementById('r-recipe').value.trim();
+  const meas=parseFloat(document.getElementById('r-meas').value);
+  if(!tool||!type||!recipe||isNaN(meas)){toast('Tool, type, recipe and measured rate are required.',true);return;}
+  const btn=document.getElementById('rate-btn');
+  btn.disabled=true; btn.textContent='Logging…';
+  setTimeout(()=>{
+    RATES.push({id:Date.now(),tool,type,recipe,measured:meas,
+      unit:document.getElementById('r-unit').value,
+      target:parseFloat(document.getElementById('r-tgt').value)||null,
+      power:parseFloat(document.getElementById('r-pow').value)||null,
+      pressure:parseFloat(document.getElementById('r-pres').value)||null,
+      temp:parseFloat(document.getElementById('r-temp').value)||null,
+      flow:parseFloat(document.getElementById('r-flow').value)||null,
+      rt:parseFloat(document.getElementById('r-rt').value)||null,
+      notes:document.getElementById('r-notes').value,
+      dt:new Date().toISOString().split('T')[0]});
+    toast('Rate logged ✓'); clearRateForm(); renderRateHistory();
+    btn.disabled=false; btn.textContent='Log rate';
+  },350);
+}
+function clearRateForm(){
+  ['r-tool','r-type','r-meth','r-unit'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['r-recipe','r-meas','r-tgt','r-pow','r-pres','r-temp','r-flow','r-rt','r-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('drift-preview').style.display='none';
+}
+
+function renderRateHistory(){
+  const el=document.getElementById('rate-hist-list');
+  const tf=document.getElementById('rh-tool').value;
+  const tyf=document.getElementById('rh-type').value;
+  const enriched=enrichRates(RATES);
+  const filtered=enriched.filter(r=>(!tf||r.tool===tf)&&(!tyf||r.type===tyf)).reverse();
+  if(!filtered.length){el.innerHTML='<div style="font-size:13px;color:var(--color-text-secondary)">No measurements match filter.</div>';return;}
+  el.innerHTML=filtered.slice(0,15).map(r=>{
+    const abs=r.drift!=null?Math.abs(r.drift):null;
+    const col=getDriftColor(abs);
+    const driftStr=r.drift!=null?`${r.drift>=0?'+':''}${fmt(r.drift,1)}% vs baseline`:'first measurement';
+    const condParts=[r.power!=null?`${r.power}W`:null,r.pressure!=null?`${r.pressure}mTorr`:null,r.temp!=null?`${r.temp}°C`:null].filter(Boolean);
+    return `<div class="rrow">
+      <div class="rdot" style="background:${col}"></div>
+      <div class="rbody">
+        <div class="rtitle">${esc(r.tool.split(' (')[0])} — ${esc(r.recipe)}</div>
+        <div class="rmeta" style="margin-bottom:2px">
+          <strong style="color:var(--color-text-primary)">${fmt(r.measured,2)} ${esc(r.unit)}</strong>
+          &ensp;·&ensp;<span style="color:${col}">${driftStr}</span>
+          &ensp;·&ensp;${r.dt}
+        </div>
+        ${condParts.length?`<div style="font-size:11px;color:var(--color-text-secondary)">${condParts.join(' · ')}</div>`:''}
+        ${r.notes?`<div style="font-size:11px;color:var(--color-text-secondary);font-style:italic;margin-top:1px">${esc(r.notes)}</div>`:''}
+      </div>
+      <span class="badge" style="background:${col}22;color:${col};flex-shrink:0">${esc(r.type)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── History tab ───────────────────────────────────────────────────────────
+function renderHistory(){
+  const s=(document.getElementById('h-search').value||'').toLowerCase();
+  const oc=document.getElementById('h-oc').value;
+  const filtered=RUNS.filter(r=>(!oc||r.outcome===oc)&&(!s||(r.tool||'').toLowerCase().includes(s)||(r.process||'').toLowerCase().includes(s)));
+  document.getElementById('h-count').textContent=`${filtered.length} run${filtered.length!==1?'s':''}`;
+  const OC_BG={pass:'#EAF3DE',partial:'#FAEEDA',fail:'#FCEBEB',aborted:'#F1EFE8'};
+  const OC_FG={pass:'#27500A',partial:'#633806',fail:'#791F1F',aborted:'#444441'};
+  document.getElementById('hist-list').innerHTML=filtered.map(r=>`
+    <div class="card rrow" style="margin-bottom:8px">
+      <div class="rdot" style="background:${OC_FG[r.outcome]||'#888'};width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0"></div>
+      <div class="rbody">
+        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+          <div class="rtitle">${esc(r.tool)} <span style="font-weight:400;color:var(--color-text-secondary)">— ${esc(r.process||'no recipe')}</span></div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="badge" style="background:${OC_BG[r.outcome]};color:${OC_FG[r.outcome]}">${r.outcome}${r.yield!=null?' · '+Math.round(r.yield)+'%':''}</span>
+            ${r.deviation!=='none'?`<span class="badge ba">SOP: ${esc(r.deviation)}</span>`:''}
+            ${r.ppe!=='full'?`<span class="badge br">PPE gap</span>`:''}
+          </div>
+        </div>
+        <div class="rmeta">${esc(r.user)} · ${esc(r.zone)} · ${r.dt}${r.duration?' · '+Math.round(r.duration)+' min':''}</div>
+        ${r.params?`<div style="font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono);margin-top:3px">${esc(r.params)}</div>`:''}
+        ${r.notes?`<div style="font-size:12px;color:var(--color-text-secondary);font-style:italic;margin-top:2px">"${esc(r.notes)}"</div>`:''}
+      </div>
+    </div>`).join('')||'<div class="card" style="color:var(--color-text-secondary);font-size:13px">No runs match filter.</div>';
+}
+
+// ── PI Dashboard ──────────────────────────────────────────────────────────
+function setPill(btn){
+  document.querySelectorAll('#day-pills .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active'); piDays=parseInt(btn.dataset.d);
+  renderPI(); renderDriftPanel(); renderSparklines(); renderCorr();
+}
+function setRTPill(btn){
+  document.querySelectorAll('#rt-pills .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active'); rtFilter=btn.dataset.rt;
+  renderDriftPanel();
+}
+
+function getCutoff(){const d=new Date();d.setDate(d.getDate()-piDays);return d.toISOString().split('T')[0];}
+
+function renderPI(){
+  const zf=document.getElementById('pi-zone').value;
+  const cut=getCutoff();
+  const data=RUNS.filter(r=>r.dt>=cut&&(!zf||r.zone===zf));
+  const total=data.length, passes=data.filter(r=>r.outcome==='pass').length;
+  const pr=total?Math.round(passes/total*100):0;
+  const devs=data.filter(r=>r.deviation!=='none').length;
+  const ppe=data.filter(r=>r.ppe!=='full').length;
+  const users=new Set(data.map(r=>r.user)).size;
+  const enriched=enrichRates(RATES);
+  const byKey={};
+  enriched.forEach(r=>{const k=`${r.tool}||${r.recipe}`;(byKey[k]=byKey[k]||[]).push(r);});
+  const worstDrift=Object.values(byKey).map(rs=>{const l=rs[rs.length-1];return l.drift!=null?Math.abs(l.drift):0;}).reduce((a,b)=>Math.max(a,b),0);
+  const driftCol=getDriftColor(worstDrift);
+
+  document.getElementById('pi-kpis').innerHTML=`
+    <div class="metric"><div class="mlabel">Runs</div><div class="mval">${total}</div><div class="msub">in period</div></div>
+    <div class="metric"><div class="mlabel">Pass rate</div><div class="mval" style="color:${pr>=80?C.green:pr>=60?C.amber:C.red}">${pr}%</div><div class="msub">${passes} passes</div></div>
+    <div class="metric"><div class="mlabel">SOP deviations</div><div class="mval" style="color:${devs>0?C.amber:C.green}">${devs}</div><div class="msub">reported</div></div>
+    <div class="metric"><div class="mlabel">PPE issues</div><div class="mval" style="color:${ppe>0?C.red:C.green}">${ppe}</div><div class="msub">reported</div></div>
+    <div class="metric"><div class="mlabel">Max rate drift</div><div class="mval" style="color:${driftCol}">${fmt(worstDrift,1)}%</div><div class="msub">any recipe</div></div>
+    <div class="metric"><div class="mlabel">Active users</div><div class="mval">${users}</div><div class="msub">this period</div></div>
+  `;
+
+  // Anomalies: runs + rate drift
+  const alerts=[];
+  const tg={};
+  data.forEach(r=>{(tg[r.tool]=tg[r.tool]||[]).push(r);});
+  Object.entries(tg).forEach(([tool,rs])=>{
+    if(rs.length>=3){
+      const rp=Math.round(rs.slice(-3).filter(r=>r.outcome==='pass').length/3*100);
+      if(rp<60) alerts.push({sev:'w',title:'Yield alert',msg:`${tool}: last 3 runs — ${rp}% pass rate. Check tool condition.`});
+    }
+  });
+  const enrichedNow=enrichRates(RATES);
+  const latestByRecipe={};
+  enrichedNow.forEach(r=>{const k=`${r.tool}||${r.recipe}`;if(!latestByRecipe[k]||r.dt>latestByRecipe[k].dt)latestByRecipe[k]=r;});
+  Object.values(latestByRecipe).forEach(r=>{
+    if(r.drift==null) return;
+    const abs=Math.abs(r.drift);
+    if(abs>25) alerts.push({sev:'d',title:'Rate drift — investigate',msg:`${r.tool} (${r.recipe}): latest measurement ${r.drift>=0?'+':''}${fmt(r.drift,1)}% from rolling baseline. Possible chamber condition issue or tool degradation.`});
+    else if(abs>10) alerts.push({sev:'w',title:'Rate drift — monitor',msg:`${r.tool} (${r.recipe}): latest measurement ${r.drift>=0?'+':''}${fmt(r.drift,1)}% from baseline — monitor closely.`});
+  });
+  if(ppe>=2) alerts.push({sev:'d',title:'PPE compliance',msg:`${ppe} PPE compliance gaps reported this period. Consider a targeted refresher session.`});
+
+  document.getElementById('pi-alerts').innerHTML=alerts.length
+    ?`<div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Flagged insights</div>`
+     +alerts.map(a=>`<div class="alert alert-${a.sev==='d'?'d':'w'}"><div class="alert-title">${a.title}</div>${esc(a.msg)}</div>`).join('')
+    :'';
+
+  // Yield chart
+  const bd={};
+  data.forEach(r=>{if(!bd[r.dt])bd[r.dt]={p:0,t:0};bd[r.dt].t++;if(r.outcome==='pass')bd[r.dt].p++;});
+  const dkeys=Object.keys(bd).sort();
+  killChart('yield');
+  chartReg['yield']=new Chart(document.getElementById('c-yield').getContext('2d'),{
+    type:'line',
+    data:{labels:dkeys.map(d=>{const p=d.split('-');return p[2]+'/'+p[1];}),
+      datasets:[{label:'Pass rate %',data:dkeys.map(d=>Math.round(bd[d].p/bd[d].t*100)),
+        borderColor:'#185FA5',backgroundColor:'rgba(24,95,165,.07)',tension:.35,pointRadius:3,fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(127,127,127,.05)'}},
+              x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:8},grid:{display:false}}}}
+  });
+
+  // Tool bar chart
+  const tc={};data.forEach(r=>{tc[r.tool]=(tc[r.tool]||0)+1;});
+  const top=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  killChart('tools');
+  chartReg['tools']=new Chart(document.getElementById('c-tools').getContext('2d'),{
+    type:'bar',
+    data:{labels:top.map(t=>t[0].split(' (')[0]),datasets:[{label:'Runs',data:top.map(t=>t[1]),backgroundColor:SERIES_C}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:10}},grid:{color:'rgba(127,127,127,.05)'}},y:{ticks:{font:{size:10}}}}}
+  });
+
+  // Outcome doughnut
+  const oc={pass:0,partial:0,fail:0,aborted:0};
+  data.forEach(r=>{if(oc[r.outcome]!=null)oc[r.outcome]++;});
+  const ov=[oc.pass,oc.partial,oc.fail,oc.aborted];
+  document.getElementById('oc-legend').innerHTML=['Pass','Partial','Fail','Aborted'].map((l,i)=>
+    `<span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:${OC_C[i]};display:inline-block"></span>${l} (${ov[i]})</span>`).join('');
+  killChart('oc');
+  chartReg['oc']=new Chart(document.getElementById('c-oc').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Pass','Partial','Fail','Aborted'],datasets:[{data:ov,backgroundColor:OC_C,borderWidth:2,borderColor:'var(--color-background-primary)'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}
+  });
+
+  // PPE bars
+  const pFull=total-ppe, pMinor=Math.round(ppe*.6), pNon=ppe-pMinor;
+  document.getElementById('ppe-bars').innerHTML=[
+    {l:'Full compliance',v:total?Math.round(pFull/total*100):100,c:C.green},
+    {l:'Minor gap',v:total?Math.round(pMinor/total*100):0,c:C.amber},
+    {l:'Non-compliant',v:total?Math.round(pNon/total*100):0,c:C.red},
+  ].map(b=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+    <div style="font-size:12px;color:var(--color-text-secondary);min-width:112px">${b.l}</div>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:${b.v}%;background:${b.c}"></div></div>
+    <div style="font-size:12px;font-weight:500;min-width:32px;text-align:right">${b.v}%</div>
+  </div>`).join('');
+
+  // Leaderboard
+  const uc={};data.forEach(r=>{uc[r.user]=(uc[r.user]||0)+1;});
+  document.getElementById('pi-lb').innerHTML=Object.entries(uc).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([name,cnt],i)=>{
+    const init=name.split(/[\s.]+/).filter(Boolean).map(w=>w[0].toUpperCase()).slice(0,2).join('');
+    const streak=[4,3,7,2,5][i]||1;
+    return `<div class="lrow">
+      <div style="font-size:12px;color:var(--color-text-secondary);width:18px;text-align:center">${i+1}</div>
+      <div class="avatar" style="background:${LB_BG[i]};color:${LB_FG[i]}">${init}</div>
+      <div style="flex:1"><div style="font-size:12px;font-weight:500">${esc(name)}</div><div style="font-size:11px;color:var(--color-text-secondary)">${cnt} run${cnt!==1?'s':''}</div></div>
+      <div style="font-size:12px;font-weight:500;color:${C.green}">${streak}d</div>
+    </div>`;
+  }).join('')||'<div style="font-size:13px;color:var(--color-text-secondary)">No data.</div>';
+}
+
+// ── Drift panel ───────────────────────────────────────────────────────────
+function renderDriftPanel(){
+  const el=document.getElementById('drift-panel');
+  const enriched=enrichRates(RATES);
+  const filtered=enriched.filter(r=>!rtFilter||r.type===rtFilter);
+  const byKey={};
+  filtered.forEach(r=>{const k=`${r.tool}||${r.recipe}`;(byKey[k]=byKey[k]||[]).push(r);});
+  const entries=Object.entries(byKey).map(([k,rs])=>{
+    const latest=rs[rs.length-1];
+    const trend=trendDir(rs,'measured');
+    return{...latest,trend,allMeasured:rs.map(r=>r.measured)};
+  }).filter(e=>e.drift!=null).sort((a,b)=>Math.abs(b.drift)-Math.abs(a.drift));
+
+  if(!entries.length){el.innerHTML='<div style="font-size:13px;color:var(--color-text-secondary)">No rate measurements logged yet. Use the "Log rates" tab to start tracking.</div>';return;}
+
+  el.innerHTML=entries.map(e=>{
+    const abs=Math.abs(e.drift);
+    const col=getDriftColor(abs);
+    const barW=Math.min(abs*2.5,100);
+    const lbl=abs<=10?'Normal':abs<=25?'Monitor':'Investigate';
+    const trendSymbol=e.trend==='up'?'↑':e.trend==='down'?'↓':'→';
+    const trendCol=e.type==='etch'
+      ?(e.trend==='up'?C.amber:e.trend==='down'?C.red:C.green)
+      :(e.trend==='up'?C.green:e.trend==='down'?C.amber:C.green);
+    return `<div class="drow">
+      <div class="dtool">${esc(e.tool.split(' (')[0])}</div>
+      <div class="drecipe">${esc(e.recipe)}</div>
+      <div class="dbar-bg"><div class="dbar-fill" style="width:${barW}%;background:${col}"></div></div>
+      <div class="dval" style="color:${col}">${e.drift>=0?'+':''}${fmt(e.drift,1)}%</div>
+      <div style="min-width:22px;text-align:center;font-size:14px;color:${trendCol};font-weight:500">${trendSymbol}</div>
+      <span class="badge" style="background:${col}22;color:${col};min-width:70px;text-align:center">${lbl}</span>
+      <div style="font-size:11px;color:var(--color-text-secondary);min-width:80px;text-align:right">${fmt(e.measured,2)} ${esc(e.unit)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Sparklines ────────────────────────────────────────────────────────────
+function renderSparklines(){
+  const el=document.getElementById('sp-panel');
+  const tf=document.getElementById('sp-tool').value;
+  const enriched=enrichRates(RATES);
+  const byKey={};
+  enriched.filter(r=>!tf||r.tool===tf).forEach(r=>{const k=`${r.tool}||${r.recipe}`;(byKey[k]=byKey[k]||[]).push(r);});
+  const keys=Object.keys(byKey);
+  Object.keys(chartReg).filter(k=>k.startsWith('sp')).forEach(k=>killChart(k));
+  if(!keys.length){el.innerHTML='<div style="font-size:13px;color:var(--color-text-secondary)">No rate data for this selection.</div>';return;}
+  el.innerHTML=keys.map((k,i)=>{
+    const rs=byKey[k];
+    const last=rs[rs.length-1];
+    const abs=last.drift!=null?Math.abs(last.drift):0;
+    const col=getDriftColor(abs);
+    return `<div class="srow">
+      <div class="slabel">
+        <div class="slabel-main">${esc(rs[0].tool.split(' (')[0])}</div>
+        <div class="slabel-sub">${esc(rs[0].recipe)}</div>
+      </div>
+      <div class="swrap"><canvas id="sp${i}" role="img" aria-label="Sparkline showing rate history for ${esc(rs[0].recipe)}. ${rs.length} data points. Latest value ${fmt(last.measured,2)} ${esc(last.unit)}."></canvas></div>
+      <div class="sstat">
+        <div class="sstat-val" style="color:${col}">${fmt(last.measured,2)}</div>
+        <div class="sstat-sub">${esc(last.unit)}</div>
+        ${last.drift!=null?`<div style="font-size:10px;color:${col};margin-top:1px">${last.drift>=0?'+':''}${fmt(last.drift,1)}%</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  setTimeout(()=>{
+    keys.forEach((k,i)=>{
+      const rs=byKey[k];
+      const vals=rs.map(r=>r.measured);
+      const baseline=rollingMedian(vals);
+      const last=rs[rs.length-1];
+      const abs=last.drift!=null?Math.abs(last.drift):0;
+      const lc=getDriftColor(abs);
+      const cv=document.getElementById(`sp${i}`);
+      if(!cv) return;
+      chartReg[`sp${i}`]=new Chart(cv.getContext('2d'),{
+        type:'line',
+        data:{
+          labels:rs.map(r=>r.dt),
+          datasets:[
+            {data:vals,borderColor:lc,borderWidth:2,pointRadius:rs.length<=6?3:0,pointHoverRadius:4,tension:.3,fill:false,label:'Rate'},
+            {data:Array(vals.length).fill(baseline),borderColor:'rgba(127,127,127,.35)',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false,label:'Baseline'},
+          ]
+        },
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y,2)} ${last.unit}`}}},
+          scales:{x:{display:false},y:{display:false,min:Math.min(...vals)*0.92,max:Math.max(...vals)*1.08}}}
+      });
+    });
+  },60);
+}
+
+// ── Correlation scatter ───────────────────────────────────────────────────
+function buildRecipeDropdown(){
+  const sel=document.getElementById('cr-recipe');
+  const current=sel.value;
+  const keys=[...new Set(RATES.map(r=>`${r.tool}||${r.recipe}`))];
+  sel.innerHTML='<option value="">Select recipe…</option>'+
+    keys.map(k=>{const[t,r]=k.split('||');return`<option value="${esc(k)}">${esc(t.split(' (')[0])} — ${esc(r)}</option>`;}).join('');
+  if(current) sel.value=current;
+}
+
+function renderCorr(){
+  const key=document.getElementById('cr-recipe').value;
+  const param=document.getElementById('cr-param').value;
+  const hint=document.getElementById('corr-hint');
+  killChart('corr');
+  if(!key){hint.style.display='none';return;}
+  const enriched=enrichRates(RATES);
+  const rs=enriched.filter(r=>`${r.tool}||${r.recipe}`===key&&r[param]!=null);
+  if(rs.length<2){
+    hint.textContent=`Not enough data points with "${param}" recorded for this recipe (${rs.length} found — need at least 2).`;
+    hint.style.display='block'; return;
+  }
+  hint.style.display='none';
+  const unit=rs[0].unit;
+  const baseline=rollingMedian(rs.map(r=>r.measured));
+  const xArr=rs.map(r=>r[param]);
+  const pad=(Math.max(...xArr)-Math.min(...xArr))*0.15||1;
+  const PARAM_LABELS={power:'Power (W)',pressure:'Pressure (mTorr)',temp:'Temperature (°C)',flow:'Gas flow (sccm)'};
+  chartReg['corr']=new Chart(document.getElementById('c-corr').getContext('2d'),{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Rate',data:rs.map(r=>({x:r[param],y:r.measured})),
+        backgroundColor:rs.map(r=>{const a=r.drift!=null?Math.abs(r.drift):0;return getDriftColor(a)+'CC';}),
+        pointRadius:7,pointHoverRadius:9},
+      {label:'Baseline',type:'line',data:[{x:Math.min(...xArr)-pad,y:baseline},{x:Math.max(...xArr)+pad,y:baseline}],
+        borderColor:'rgba(127,127,127,.4)',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:c=>`Rate: ${fmt(c.parsed.y,2)} ${unit}  |  ${PARAM_LABELS[param]}: ${c.parsed.x}`}}},
+      scales:{
+        x:{title:{display:true,text:PARAM_LABELS[param],font:{size:11}},
+           min:Math.min(...xArr)-pad,max:Math.max(...xArr)+pad,
+           ticks:{font:{size:10}},grid:{color:'rgba(127,127,127,.05)'}},
+        y:{title:{display:true,text:`Rate (${unit})`,font:{size:11}},
+           ticks:{font:{size:10}},grid:{color:'rgba(127,127,127,.05)'}}
+      }
+    }
+  });
+}
+
+// ── Post notice ───────────────────────────────────────────────────────────
+function postNotice(){
+  const title=document.getElementById('n-title').value.trim();
+  const body=document.getElementById('n-body').value.trim();
+  if(!title||!body){toast('Title and body are required.',true);return;}
+  NOTICES.unshift({id:Date.now(),title,body,
+    sev:document.getElementById('n-sev').value,
+    zone:document.getElementById('n-zone').value||null,
+    author:'Prof. M. Singh',
+    dt:new Date().toISOString().split('T')[0]});
+  toast('Notice posted.');
+  document.getElementById('n-title').value='';
+  document.getElementById('n-body').value='';
+  renderNotices();
+}
+</script>
