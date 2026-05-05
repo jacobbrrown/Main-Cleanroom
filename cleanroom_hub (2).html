@@ -20,6 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
 
 /* ── App shell ─────────────────────────────────────────── */
 #app{display:none;flex-direction:column;min-height:100vh}
+#pi-notices-card{display:block}
 .topbar{background:var(--navy);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:50px;flex-shrink:0}
 .topbar-brand{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
 .topbar-right{display:flex;align-items:center;gap:8px}
@@ -166,6 +167,10 @@ textarea{resize:vertical;height:56px}
 .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
 
 /* ── Toast ─────────────────────────────────────────────── */
+.confirm-dialog{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;box-shadow:0 4px 24px rgba(0,0,0,.15);z-index:998;display:none;text-align:center;min-width:280px;max-width:90vw}
+.confirm-dialog.open{display:block}
+.confirm-dialog p{font-size:13px;margin-bottom:12px;color:var(--text)}
+.confirm-dialog .btn-row{display:flex;gap:8px;justify-content:center}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .toast.show{opacity:1}.toast.err{background:var(--red)}
 
@@ -204,8 +209,8 @@ textarea{resize:vertical;height:56px}
       🔬 <span>Cleanroom Hub</span>
     </div>
     <div class="topbar-right">
-      <span class="user-chip" id="tb-user">J Brown</span>
-      <span class="role-chip" id="tb-role" style="background:var(--teal)">user</span>
+      <span class="user-chip" id="tb-user">A Murray</span>
+      <span class="role-chip" id="tb-role" style="background: rgb(83, 59, 167);">pi</span>
       <button class="btn btn-g btn-sm" style="color:#fff;border-color:rgba(255,255,255,.3);background:none" onclick="doLogout()">Sign out</button>
     </div>
   </div>
@@ -218,30 +223,26 @@ textarea{resize:vertical;height:56px}
   <!-- ── TRACKER SECTION ─────────────────────────────────────────────── -->
   <div id="section-tracker">
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('log',this)">Log run</button>
+      <button class="tab" onclick="switchTab('log',this)">Log run</button>
       <button class="tab" onclick="switchTab('rates',this)">Log rates</button>
       <button class="tab" onclick="switchTab('history',this)">My runs</button>
-      <button class="tab" onclick="switchTab('pi',this)">PI dashboard</button>
+      <button class="tab active" onclick="switchTab('pi',this)">PI dashboard</button>
     </div>
     <div class="main">
 
       <!-- Export banner -->
       <div class="export-banner">
-        <div class="export-banner-text" id="export-msg">17 runs, 21 rate measurements, 9 recipes saved in this browser. Click Export / Share to download (desktop) or share via AirDrop / Files (iPad &amp; iPhone).</div>
+        <div class="export-banner-text" id="export-msg">1 run, 1 rate measurement, 9 recipes saved in this browser. Click Export / Share to download (desktop) or share via AirDrop / Files (iPad &amp; iPhone).</div>
         <button class="btn btn-export btn-sm" onclick="exportHTML()">⬇ Export / Share</button>
-        <button class="btn btn-g btn-sm" onclick="confirmReset('tracker')">Reset demo data</button>
+        <button class="btn btn-g btn-sm" onclick="confirmReset('tracker')">Clear all data</button>
       </div>
 
       <!-- LOG RUN -->
-      <div id="t-log" style="display: block;">
+      <div id="t-log" style="display: none;">
         <div id="notices-area" style="margin-bottom:2px">
-    <div class="alert alert-w" style="margin-bottom:10px">
-      <div class="alert-title">RIE etcher (Oxford) — etch rate declining</div><div>SiO2 CF4/CHF3 rate has dropped ~14% over 4 weeks. Log a calibration run before your next etch.</div>
-      <div style="font-size:11px;opacity:.7;margin-top:4px">Prof. M. Singh · 2025-04-30</div>
-    </div>
-    <div class="alert alert-d" style="margin-bottom:10px">
-      <div class="alert-title">Thermal evaporator — filament replacement due</div><div>Au deposition rate declining and base pressure creeping. Use e-beam for critical depositions in the interim.</div>
-      <div style="font-size:11px;opacity:.7;margin-top:4px">Facility Manager · 2025-04-29</div>
+    <div class="alert alert-i" style="margin-bottom:10px">
+      <div class="alert-title">Exhaust Fan Works</div><div>Exhaust fan works mean that all plasma tool will be unavailable until 13th of May.</div>
+      <div style="font-size:11px;opacity:.7;margin-top:4px">A Murray · 2026-05-05</div>
     </div></div>
         <div class="card" style="border-left:3px solid var(--navy);padding-left:15px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
@@ -453,82 +454,12 @@ textarea{resize:vertical;height:56px}
               <select id="rh-type" onchange="renderRateHistory()" style="font-size:12px;width:auto"><option value="">All types</option><option value="etch">Etch</option><option value="deposition">Deposition</option></select>
             </div>
           </div>
-          <div id="rate-hist-list"><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">DRIE — Si Bosch DRIE</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">3.00 µm/min</strong>  · <span style="color:#1D9E75">+3.4% vs baseline</span>  · 2025-04-26</div>
-      <div style="font-size:11px;color:var(--muted)">600W · 30mTorr · 20°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">etch</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">DRIE — Si Bosch DRIE</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">3.10 µm/min</strong>  · <span style="color:#1D9E75">+8.8% vs baseline</span>  · 2025-04-19</div>
-      <div style="font-size:11px;color:var(--muted)">600W · 30mTorr · 20°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">etch</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">DRIE — Si Bosch DRIE</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">2.90 µm/min</strong>  · <span style="color:#1D9E75">+3.6% vs baseline</span>  · 2025-04-12</div>
-      <div style="font-size:11px;color:var(--muted)">600W · 30mTorr · 20°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">etch</span></div><div class="rrow"><div class="rdot" style="background:#888"></div><div class="rbody">
-      <div class="rtitle">DRIE — Si Bosch DRIE</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">2.80 µm/min</strong>  · <span style="color:#888">first measurement</span>  · 2025-04-05</div>
-      <div style="font-size:11px;color:var(--muted)">600W · 30mTorr · 20°C</div>
-      
-    </div><span class="badge" style="background:#88822;color:#888;flex-shrink:0">etch</span></div><div class="rrow"><div class="rdot" style="background:#EF9F27"></div><div class="rbody">
-      <div class="rtitle">Thermal evaporator — Au deposition</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">0.42 Å/s</strong>  · <span style="color:#EF9F27">-16.0% vs baseline</span>  · 2025-04-30</div>
-      <div style="font-size:11px;color:var(--muted)">3.1mTorr</div>
-      <div style="font-size:11px;color:var(--muted);font-style:italic">Rate drop + pressure creep</div>
-    </div><span class="badge" style="background:#EF9F2722;color:#EF9F27;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">Thermal evaporator — Au deposition</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">0.46 Å/s</strong>  · <span style="color:#1D9E75">-9.8% vs baseline</span>  · 2025-04-24</div>
-      <div style="font-size:11px;color:var(--muted)">2.5mTorr</div>
-      <div style="font-size:11px;color:var(--muted);font-style:italic">Filament aging?</div>
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">Thermal evaporator — Au deposition</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">0.49 Å/s</strong>  · <span style="color:#1D9E75">-4.9% vs baseline</span>  · 2025-04-17</div>
-      <div style="font-size:11px;color:var(--muted)">2.1mTorr</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">Thermal evaporator — Au deposition</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">0.51 Å/s</strong>  · <span style="color:#1D9E75">-1.9% vs baseline</span>  · 2025-04-10</div>
-      <div style="font-size:11px;color:var(--muted)">2.2mTorr</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#888"></div><div class="rbody">
-      <div class="rtitle">Thermal evaporator — Au deposition</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">0.52 Å/s</strong>  · <span style="color:#888">first measurement</span>  · 2025-04-03</div>
-      <div style="font-size:11px;color:var(--muted)">2.1mTorr</div>
-      
-    </div><span class="badge" style="background:#88822;color:#888;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">PECVD — SiN PECVD 300°C</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">12.20 nm/min</strong>  · <span style="color:#1D9E75">+1.2% vs baseline</span>  · 2025-04-28</div>
-      <div style="font-size:11px;color:var(--muted)">20W · 900mTorr · 300°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">PECVD — SiN PECVD 300°C</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">12.00 nm/min</strong>  · <span style="color:#1D9E75">-0.8% vs baseline</span>  · 2025-04-21</div>
-      <div style="font-size:11px;color:var(--muted)">20W · 900mTorr · 300°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">PECVD — SiN PECVD 300°C</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">11.90 nm/min</strong>  · <span style="color:#1D9E75">-2.5% vs baseline</span>  · 2025-04-14</div>
-      <div style="font-size:11px;color:var(--muted)">20W · 900mTorr · 300°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#1D9E75"></div><div class="rbody">
-      <div class="rtitle">PECVD — SiN PECVD 300°C</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">12.30 nm/min</strong>  · <span style="color:#1D9E75">+1.7% vs baseline</span>  · 2025-04-08</div>
-      <div style="font-size:11px;color:var(--muted)">20W · 900mTorr · 300°C</div>
-      
-    </div><span class="badge" style="background:#1D9E7522;color:#1D9E75;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#888"></div><div class="rbody">
-      <div class="rtitle">PECVD — SiN PECVD 300°C</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">12.10 nm/min</strong>  · <span style="color:#888">first measurement</span>  · 2025-04-02</div>
-      <div style="font-size:11px;color:var(--muted)">20W · 900mTorr · 300°C</div>
-      
-    </div><span class="badge" style="background:#88822;color:#888;flex-shrink:0">deposition</span></div><div class="rrow"><div class="rdot" style="background:#EF9F27"></div><div class="rbody">
-      <div class="rtitle">RIE etcher — SiO2 etch CF4/CHF3</div>
-      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">38.80 nm/min</strong>  · <span style="color:#EF9F27">-12.7% vs baseline</span>  · 2025-04-30</div>
-      <div style="font-size:11px;color:var(--muted)">100W · 50mTorr</div>
-      <div style="font-size:11px;color:var(--muted);font-style:italic">Significant — chamber clean needed?</div>
-    </div><span class="badge" style="background:#EF9F2722;color:#EF9F27;flex-shrink:0">etch</span></div></div>
+          <div id="rate-hist-list"><div class="rrow"><div class="rdot" style="background:#888"></div><div class="rbody">
+      <div class="rtitle">Thermal Evaporator — Al</div>
+      <div class="rmeta" style="margin-bottom:2px"><strong style="color:var(--text)">1.50 nm/s</strong>  · <span style="color:#888">first measurement</span>  · 2026-05-05</div>
+      <div style="font-size:11px;color:var(--muted)">80W · 6mTorr · 30°C</div>
+      <div style="font-size:11px;color:var(--muted);font-style:italic">Rate reduced towards the end, load more material into the crucible next time.</div>
+    </div><span class="badge" style="background:#88822;color:#888;flex-shrink:0">deposition</span></div></div>
         </div>
       </div>
 
@@ -537,285 +468,29 @@ textarea{resize:vertical;height:56px}
         <div class="frow">
           <input id="h-search" placeholder="Filter by tool or process…" style="width:190px" oninput="renderHistory()">
           <select id="h-oc" onchange="renderHistory()" style="width:auto"><option value="">All outcomes</option><option value="pass">Pass</option><option value="partial">Partial</option><option value="fail">Fail</option><option value="aborted">Aborted</option></select>
-          <span id="h-count" style="font-size:12px;color:var(--muted)">17 runs</span>
+          <span id="h-count" style="font-size:12px;color:var(--muted)">1 run</span>
         </div>
         <div id="hist-list">
     <div class="card rrow" style="margin-bottom:8px">
       <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
       <div class="rbody">
         <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Thermal evaporator <span style="font-weight:400;color:var(--muted)">— Al / Au Deposition </span></div>
+          <div class="rtitle">Thermal Evaporator <span style="font-weight:400;color:var(--muted)">— Al/Au</span></div>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             <span class="badge" style="background:#DCFCE7;color:#166534">pass · 95%</span>
             
             
           </div>
         </div>
-        <div class="rmeta">J. Brown · Zone B — Deposition &amp; Etch · 2026-05-05 · 150 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">| Pressure: 6 mtorr | Temperature: &lt;40C | Resist: PMMA A4 495 (200 nm) | 80 % on source 1 to evaporate 50 nm of Al at a rate of 0.12 kA/s | 15 min cooldown period to allow T&lt;30C | 85% on source 2 to evaporate 10 nm of Au at a rate of 0.02 kA/s |</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Pressure stalled at 6 mtorr, top up with liquid nitrogen next time. Cooldown took longer than normal, may be related to the vacuum pressure. Good yield, process passes but the quality of devices performance is low, maybe partially oxidised alumminium layer. "</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Thermal evaporator <span style="font-weight:400;color:var(--muted)">— Al/Au Deposition</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">J Brown · Zone B — Deposition &amp; Etch · 2026-05-03T16:43 · 150 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Resist: PMMA A4 495 | 80 % on source 1 to evaporate Al at a rate of 0.1 kA/s | 85% on source 2 to evaporate Au at a rate of 0.02 kA/s </div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Developed the night before and left under vacuum in the thermal evaporator overnight to dry out."</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Mask aligner (MA6) <span style="font-weight:400;color:var(--muted)">— AZ1512 positive resist spin</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">A. Patel · Zone A — Lithography · 2025-04-27T09:30 · 50 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#92400E;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Mask aligner (MA6) <span style="font-weight:400;color:var(--muted)">— AZ1512 positive resist spin</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEF3C7;color:#92400E">partial · 75%</span>
-            <span class="badge ba">SOP: minor</span>
-            
-          </div>
-        </div>
-        <div class="rmeta">A. Patel · Zone A — Lithography · 2025-04-28T10:15 · 52 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6.5s</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"One sample had edge bead issues"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">RIE etcher (Oxford) <span style="font-weight:400;color:var(--muted)">— SiO2 etch CF4/CHF3</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">R. Chen · Zone B — Deposition &amp; Etch · 2025-04-26T14:00 · 35 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">CF4: 20 sccm | CHF3: 10 sccm | Power: 100W | Pressure: 50mT</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#92400E;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">RIE etcher (Oxford) <span style="font-weight:400;color:var(--muted)">— SiO2 etch CF4/CHF3</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEF3C7;color:#92400E">partial · 83%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">R. Chen · Zone B — Deposition &amp; Etch · 2025-04-27T11:00 · 38 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">CF4: 20 sccm | CHF3: 10 sccm | Power: 100W | Pressure: 50mT</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Etch rate slightly low — chamber due for clean?"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Profilometer <span style="font-weight:400;color:var(--muted)">— Step height measurement</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">L. Okafor · Zone C — Metrology &amp; Prep · 2025-04-25T09:00 · 20 min</div>
-        
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">SEM <span style="font-weight:400;color:var(--muted)">— Cross-section imaging</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">L. Okafor · Zone C — Metrology &amp; Prep · 2025-04-26T09:30 · 60 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Acc. voltage: 5 kV | WD: 10 mm</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#92400E;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Spin coater <span style="font-weight:400;color:var(--muted)">— SU-8 2025 thick film</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEF3C7;color:#92400E">partial · 50%</span>
-            <span class="badge ba">SOP: major</span>
-            <span class="badge br">PPE gap</span>
-          </div>
-        </div>
-        <div class="rmeta">B. Novak · Zone A — Lithography · 2025-04-28T13:00 · 25 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Spin: 2000 rpm | Bake: 95°C 3min | Thickness target: 25µm</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Edge delamination on both samples — suspect adhesion issue. Major deviation: modified bake time"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Mask aligner (MA6) <span style="font-weight:400;color:var(--muted)">— AZ1512 positive resist spin</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">A. Patel · Zone A — Lithography · 2025-04-29T09:00 · 51 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">PECVD <span style="font-weight:400;color:var(--muted)">— SiN deposition</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">R. Chen · Zone B — Deposition &amp; Etch · 2025-04-28T14:30 · 90 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">SiH4: 20 sccm | NH3: 20 sccm | N2: 500 sccm | RF: 20W | Temp: 300°C</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#92400E;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Thermal evaporator <span style="font-weight:400;color:var(--muted)">— Au deposition</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEF3C7;color:#92400E">partial · 80%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">J. Williams · Zone B — Deposition &amp; Etch · 2025-04-27T15:00 · 45 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Rate: 0.5 A/s | Thickness: 100nm | Pressure: 2e-6 Torr</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Slight thickness non-uniformity across wafer"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#92400E;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Thermal evaporator <span style="font-weight:400;color:var(--muted)">— Au deposition</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEF3C7;color:#92400E">partial · 60%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">J. Williams · Zone B — Deposition &amp; Etch · 2025-04-28T10:00 · 47 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Rate: 0.5 A/s | Thickness: 100nm | Pressure: 3e-6 Torr</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Uniformity worse. Filament age?"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#991B1B;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Stepper (i-line) <span style="font-weight:400;color:var(--muted)">— Fine feature litho 1µm</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#FEE2E2;color:#991B1B">fail · 0%</span>
-            <span class="badge ba">SOP: minor</span>
-            
-          </div>
-        </div>
-        <div class="rmeta">B. Novak · Zone A — Lithography · 2025-04-29T11:30 · 70 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Focus: -0.3µm | Exp: 140 mJ/cm2</div>
-        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Complete resolution failure — likely contamination on lens or wafer chuck"</div>
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Profilometer <span style="font-weight:400;color:var(--muted)">— Roughness scan</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">L. Okafor · Zone C — Metrology &amp; Prep · 2025-04-29T09:00 · 15 min</div>
-        
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">Mask aligner (MA6) <span style="font-weight:400;color:var(--muted)">— AZ1512 positive resist spin</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">A. Patel · Zone A — Lithography · 2025-04-30T09:15 · 50 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s</div>
-        
-      </div>
-    </div>
-    <div class="card rrow" style="margin-bottom:8px">
-      <div class="rdot" style="background:#166534;width:10px;height:10px;margin-top:4px;flex-shrink:0"></div>
-      <div class="rbody">
-        <div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-          <div class="rtitle">RIE etcher (Oxford) <span style="font-weight:400;color:var(--muted)">— Si etch SF6</span></div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="badge" style="background:#DCFCE7;color:#166534">pass · 100%</span>
-            
-            
-          </div>
-        </div>
-        <div class="rmeta">R. Chen · Zone B — Deposition &amp; Etch · 2025-04-30T13:00 · 40 min</div>
-        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">SF6: 40 sccm | Power: 150W | Pressure: 100mT</div>
-        
+        <div class="rmeta">J Brown · Zone B — Deposition &amp; Etch · 2026-05-05 · 150 min</div>
+        <div style="font-size:11px;color:var(--muted);font-family:monospace;margin-top:3px">80% for 50 nm @ 1.5 nm/s &amp; 85% for 10 nm @ 0.2 nm/s </div>
+        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-top:2px">"Pressure was quite high. "</div>
       </div>
     </div></div>
       </div>
 
       <!-- PI DASHBOARD -->
-      <div id="t-pi" style="display: none;">
+      <div id="t-pi" style="display: block;">
         <div class="frow">
           <div class="pills" id="day-pills">
             <button class="pill" data-d="7" onclick="setPill(this)">7 days</button>
@@ -825,13 +500,13 @@ textarea{resize:vertical;height:56px}
           <select id="pi-zone" onchange="renderPI()" style="width:auto;font-size:12px"><option value="">All zones</option><option>Zone A — Lithography</option><option>Zone B — Deposition &amp; Etch</option><option>Zone C — Metrology &amp; Prep</option></select>
         </div>
         <div class="metrics" id="pi-kpis">
-    <div class="metric"><div class="mlabel">Runs</div><div class="mval">2</div><div class="msub">in period</div></div>
+    <div class="metric"><div class="mlabel">Runs</div><div class="mval">1</div><div class="msub">in period</div></div>
     <div class="metric"><div class="mlabel">Pass rate</div><div class="mval" style="color:#1D9E75">100%</div></div>
     <div class="metric"><div class="mlabel">SOP deviations</div><div class="mval" style="color:#1D9E75">0</div></div>
     <div class="metric"><div class="mlabel">PPE issues</div><div class="mval" style="color:#1D9E75">0</div></div>
-    <div class="metric"><div class="mlabel">Max drift</div><div class="mval" style="color:#EF9F27">16.0%</div></div>
-    <div class="metric"><div class="mlabel">Active users</div><div class="mval">2</div></div></div>
-        <div id="pi-alerts" style="margin-bottom:14px"><div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Flagged insights</div><div class="alert alert-w"><div class="alert-title">Rate drift — monitor</div>RIE etcher (Oxford) (SiO2 etch CF4/CHF3): -12.7% from baseline.</div><div class="alert alert-w"><div class="alert-title">Rate drift — monitor</div>Thermal evaporator (Au deposition): -16.0% from baseline.</div></div>
+    <div class="metric"><div class="mlabel">Max drift</div><div class="mval" style="color:#1D9E75">0.0%</div></div>
+    <div class="metric"><div class="mlabel">Active users</div><div class="mval">1</div></div></div>
+        <div id="pi-alerts" style="margin-bottom:14px"></div>
         <div class="g2">
           <div class="card"><div class="card-title">Pass rate over time</div><div class="cw h200"><canvas id="c-yield" width="420" height="200" style="display: block; box-sizing: border-box; height: 200px; width: 420px;"></canvas></div></div>
           <div class="card"><div class="card-title">Runs by tool</div><div class="cw h200"><canvas id="c-tools" width="420" height="200" style="display: block; box-sizing: border-box; height: 200px; width: 420px;"></canvas></div></div>
@@ -850,7 +525,7 @@ textarea{resize:vertical;height:56px}
             <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#EF9F27;margin-right:4px"></span>±25% monitor</span>
             <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#E24B4A;margin-right:4px"></span>&gt;25% investigate</span>
           </div>
-          <div id="drift-panel"><div class="drow"><div style="font-size:12px;font-weight:600;min-width:130px">Thermal evaporator</div><div style="font-size:11px;color:var(--muted);min-width:100px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Au deposition</div><div class="dbar-bg"><div class="dbar-fill" style="width:40.00000000000001%;background:#EF9F27"></div></div><div style="font-size:12px;font-weight:600;min-width:52px;text-align:right;color:#EF9F27">-16.0%</div><div style="min-width:20px;text-align:center;font-size:14px;color:#EF9F27">↓</div><span class="badge" style="background:#EF9F2722;color:#EF9F27;min-width:70px;text-align:center">Monitor</span><div style="font-size:11px;color:var(--muted);min-width:70px;text-align:right">0.42 Å/s</div></div><div class="drow"><div style="font-size:12px;font-weight:600;min-width:130px">RIE etcher</div><div style="font-size:11px;color:var(--muted);min-width:100px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">SiO2 etch CF4/CHF3</div><div class="dbar-bg"><div class="dbar-fill" style="width:31.777277840269996%;background:#EF9F27"></div></div><div style="font-size:12px;font-weight:600;min-width:52px;text-align:right;color:#EF9F27">-12.7%</div><div style="min-width:20px;text-align:center;font-size:14px;color:#E24B4A">↓</div><span class="badge" style="background:#EF9F2722;color:#EF9F27;min-width:70px;text-align:center">Monitor</span><div style="font-size:11px;color:var(--muted);min-width:70px;text-align:right">38.80 nm/min</div></div><div class="drow"><div style="font-size:12px;font-weight:600;min-width:130px">DRIE</div><div style="font-size:11px;color:var(--muted);min-width:100px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Si Bosch DRIE</div><div class="dbar-bg"><div class="dbar-fill" style="width:8.620689655172422%;background:#1D9E75"></div></div><div style="font-size:12px;font-weight:600;min-width:52px;text-align:right;color:#1D9E75">+3.4%</div><div style="min-width:20px;text-align:center;font-size:14px;color:#EF9F27">↑</div><span class="badge" style="background:#1D9E7522;color:#1D9E75;min-width:70px;text-align:center">Normal</span><div style="font-size:11px;color:var(--muted);min-width:70px;text-align:right">3.00 µm/min</div></div><div class="drow"><div style="font-size:12px;font-weight:600;min-width:130px">PECVD</div><div style="font-size:11px;color:var(--muted);min-width:100px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">SiN PECVD 300°C</div><div class="dbar-bg"><div class="dbar-fill" style="width:3.112033195020717%;background:#1D9E75"></div></div><div style="font-size:12px;font-weight:600;min-width:52px;text-align:right;color:#1D9E75">+1.2%</div><div style="min-width:20px;text-align:center;font-size:14px;color:#1D9E75">↑</div><span class="badge" style="background:#1D9E7522;color:#1D9E75;min-width:70px;text-align:center">Normal</span><div style="font-size:11px;color:var(--muted);min-width:70px;text-align:right">12.20 nm/min</div></div></div>
+          <div id="drift-panel"><div style="font-size:13px;color:var(--muted)">No rate measurements yet. Use "Log rates" to start tracking.</div></div>
         </div>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -890,13 +565,13 @@ textarea{resize:vertical;height:56px}
             <option>DC Probe Station</option>
           </select>
           </div>
-          <div id="sp-panel"><div class="srow"><div class="slabel"><div style="font-size:12px;font-weight:600">RIE etcher</div><div style="font-size:11px;color:var(--muted)">SiO2 etch CF4/CHF3</div></div><div style="flex:1;position:relative;height:38px"><canvas id="sp0" width="638" height="38" style="display: block; box-sizing: border-box; height: 38px; width: 638px;"></canvas></div><div style="min-width:72px;text-align:right"><div style="font-size:13px;font-weight:600;color:#EF9F27">38.80</div><div style="font-size:11px;color:var(--muted)">nm/min</div><div style="font-size:10px;color:#EF9F27">-12.7%</div></div></div><div class="srow"><div class="slabel"><div style="font-size:12px;font-weight:600">PECVD</div><div style="font-size:11px;color:var(--muted)">SiN PECVD 300°C</div></div><div style="flex:1;position:relative;height:38px"><canvas id="sp1" width="638" height="38" style="display: block; box-sizing: border-box; height: 38px; width: 638px;"></canvas></div><div style="min-width:72px;text-align:right"><div style="font-size:13px;font-weight:600;color:#1D9E75">12.20</div><div style="font-size:11px;color:var(--muted)">nm/min</div><div style="font-size:10px;color:#1D9E75">+1.2%</div></div></div><div class="srow"><div class="slabel"><div style="font-size:12px;font-weight:600">Thermal evaporator</div><div style="font-size:11px;color:var(--muted)">Au deposition</div></div><div style="flex:1;position:relative;height:38px"><canvas id="sp2" width="638" height="38" style="display: block; box-sizing: border-box; height: 38px; width: 638px;"></canvas></div><div style="min-width:72px;text-align:right"><div style="font-size:13px;font-weight:600;color:#EF9F27">0.42</div><div style="font-size:11px;color:var(--muted)">Å/s</div><div style="font-size:10px;color:#EF9F27">-16.0%</div></div></div><div class="srow"><div class="slabel"><div style="font-size:12px;font-weight:600">DRIE</div><div style="font-size:11px;color:var(--muted)">Si Bosch DRIE</div></div><div style="flex:1;position:relative;height:38px"><canvas id="sp3" width="638" height="38" style="display: block; box-sizing: border-box; height: 38px; width: 638px;"></canvas></div><div style="min-width:72px;text-align:right"><div style="font-size:13px;font-weight:600;color:#1D9E75">3.00</div><div style="font-size:11px;color:var(--muted)">µm/min</div><div style="font-size:10px;color:#1D9E75">+3.4%</div></div></div></div>
+          <div id="sp-panel"><div class="srow"><div class="slabel"><div style="font-size:12px;font-weight:600">Thermal Evaporator</div><div style="font-size:11px;color:var(--muted)">Al</div></div><div style="flex:1;position:relative;height:38px"><canvas id="sp0" width="638" height="38" style="display: block; box-sizing: border-box; height: 38px; width: 638px;"></canvas></div><div style="min-width:72px;text-align:right"><div style="font-size:13px;font-weight:600;color:#888">1.50</div><div style="font-size:11px;color:var(--muted)">nm/s</div></div></div></div>
         </div>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
             <div class="card-title" style="margin-bottom:0">Rate vs process condition</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <select id="cr-recipe" onchange="renderCorr()" style="font-size:12px;width:auto"><option value="">Select recipe…</option><option value="RIE etcher (Oxford)||SiO2 etch CF4/CHF3">RIE etcher — SiO2 etch CF4/CHF3</option><option value="PECVD||SiN PECVD 300°C">PECVD — SiN PECVD 300°C</option><option value="Thermal evaporator||Au deposition">Thermal evaporator — Au deposition</option><option value="DRIE (Bosch)||Si Bosch DRIE">DRIE — Si Bosch DRIE</option></select>
+              <select id="cr-recipe" onchange="renderCorr()" style="font-size:12px;width:auto"><option value="">Select recipe…</option><option value="Thermal Evaporator||Al">Thermal Evaporator — Al</option></select>
               <select id="cr-param" onchange="renderCorr()" style="font-size:12px;width:auto"><option value="power">vs Power (W)</option><option value="pressure">vs Pressure (mTorr)</option><option value="temp">vs Temperature (°C)</option><option value="flow">vs Gas flow (sccm)</option></select>
             </div>
           </div>
@@ -907,17 +582,17 @@ textarea{resize:vertical;height:56px}
         <div class="g2">
           <div class="card">
             <div class="card-title">Outcome breakdown</div>
-            <div id="oc-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--muted)"><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Pass (2)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#EF9F27;display:inline-block"></span>Partial (0)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#E24B4A;display:inline-block"></span>Fail (0)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#888780;display:inline-block"></span>Aborted (0)</span></div>
+            <div id="oc-legend" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--muted)"><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#1D9E75;display:inline-block"></span>Pass (1)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#EF9F27;display:inline-block"></span>Partial (0)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#E24B4A;display:inline-block"></span>Fail (0)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#888780;display:inline-block"></span>Aborted (0)</span></div>
             <div class="cw h180"><canvas id="c-oc" width="420" height="180" style="display: block; box-sizing: border-box; height: 180px; width: 420px;"></canvas></div>
           </div>
           <div class="card">
             <div class="card-title">PPE compliance</div>
             <div id="ppe-bars" style="margin-top:6px;margin-bottom:16px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><div style="font-size:12px;color:var(--muted);min-width:112px">Full compliance</div><div class="pbar-bg"><div class="pbar-fill" style="width:100%;background:#1D9E75"></div></div><div style="font-size:12px;font-weight:600;min-width:32px;text-align:right">100%</div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><div style="font-size:12px;color:var(--muted);min-width:112px">Minor gap</div><div class="pbar-bg"><div class="pbar-fill" style="width:0%;background:#EF9F27"></div></div><div style="font-size:12px;font-weight:600;min-width:32px;text-align:right">0%</div></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:9px"><div style="font-size:12px;color:var(--muted);min-width:112px">Non-compliant</div><div class="pbar-bg"><div class="pbar-fill" style="width:0%;background:#E24B4A"></div></div><div style="font-size:12px;font-weight:600;min-width:32px;text-align:right">0%</div></div></div>
             <div class="card-title">Contributor leaderboard</div>
-            <div id="pi-lb"><div class="lrow"><div style="font-size:12px;color:var(--muted);width:18px;text-align:center">1</div><div class="avatar" style="background:#DBEAFE;color:#1E40AF">JB</div><div style="flex:1"><div style="font-size:12px;font-weight:600">J. Brown</div><div style="font-size:11px;color:var(--muted)">1 run</div></div><div style="font-size:12px;font-weight:600;color:#1D9E75">1d</div></div><div class="lrow"><div style="font-size:12px;color:var(--muted);width:18px;text-align:center">2</div><div class="avatar" style="background:#DCFCE7;color:#166534">JB</div><div style="flex:1"><div style="font-size:12px;font-weight:600">J Brown</div><div style="font-size:11px;color:var(--muted)">1 run</div></div><div style="font-size:12px;font-weight:600;color:#1D9E75">0d</div></div></div>
+            <div id="pi-lb"><div class="lrow"><div style="font-size:12px;color:var(--muted);width:18px;text-align:center">1</div><div class="avatar" style="background:#DBEAFE;color:#1E40AF">JB</div><div style="flex:1"><div style="font-size:12px;font-weight:600">J Brown</div><div style="font-size:11px;color:var(--muted)">1 run</div></div><div style="font-size:12px;font-weight:600;color:#1D9E75">0d</div></div></div>
           </div>
         </div>
-        <div class="card" id="pi-notices-card" style="display: none;">
+        <div class="card" id="pi-notices-card">
           <div class="card-title">Post a notice to users</div>
           <div class="g2">
             <div class="field"><label>Title</label><input id="n-title" type="text" placeholder="e.g. RIE chamber — expect lower yields"></div>
@@ -946,9 +621,9 @@ textarea{resize:vertical;height:56px}
 
       <!-- Export banner (same instance, shown in both sections) -->
       <div class="export-banner">
-        <div class="export-banner-text" id="export-msg-r">17 runs, 21 rate measurements, 9 recipes saved in this browser. Click Export / Share to download (desktop) or share via AirDrop / Files (iPad &amp; iPhone).</div>
+        <div class="export-banner-text" id="export-msg-r">1 run, 1 rate measurement, 9 recipes saved in this browser. Click Export / Share to download (desktop) or share via AirDrop / Files (iPad &amp; iPhone).</div>
         <button class="btn btn-export btn-sm" onclick="exportHTML()">⬇ Export / Share</button>
-        <button class="btn btn-g btn-sm" onclick="confirmReset('recipes')">Reset demo recipes</button>
+        <button class="btn btn-g btn-sm" onclick="confirmReset('recipes')">Clear all recipes</button>
       </div>
 
       <!-- BROWSE -->
@@ -1041,7 +716,7 @@ textarea{resize:vertical;height:56px}
           </div>
           <div class="field"><label>Description</label><textarea id="n-desc" style="height:60px" placeholder="What is this recipe for? Substrate, film thickness, application…"></textarea></div>
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Process parameters</div>
-          <div id="param-rows"><div id="pr-1" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;"><input type="text" placeholder="Parameter name" style="flex:1;font-size:12px" class="pr-key"><input type="text" placeholder="Value and unit" style="flex:1;font-size:12px" class="pr-val"><button class="btn btn-g btn-sm" style="flex-shrink:0;padding:4px 9px" onclick="document.getElementById('pr-1').remove()">×</button></div><div id="pr-2" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;"><input type="text" placeholder="Parameter name" style="flex:1;font-size:12px" class="pr-key"><input type="text" placeholder="Value and unit" style="flex:1;font-size:12px" class="pr-val"><button class="btn btn-g btn-sm" style="flex-shrink:0;padding:4px 9px" onclick="document.getElementById('pr-2').remove()">×</button></div><div id="pr-3" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;"><input type="text" placeholder="Parameter name" style="flex:1;font-size:12px" class="pr-key"><input type="text" placeholder="Value and unit" style="flex:1;font-size:12px" class="pr-val"><button class="btn btn-g btn-sm" style="flex-shrink:0;padding:4px 9px" onclick="document.getElementById('pr-3').remove()">×</button></div></div>
+          <div id="param-rows"></div>
           <button class="btn btn-g btn-sm" onclick="addParamRow()" style="margin-bottom:12px">+ Add parameter</button>
           <div class="g3">
             <div class="field"><label>Expected rate</label><input id="n-rate" type="number" min="0" step="0.01" placeholder="e.g. 45"></div>
@@ -1065,7 +740,15 @@ textarea{resize:vertical;height:56px}
   </div><!-- /section-recipes -->
 </div><!-- /app -->
 
-<div class="toast" id="toast">Downloaded! Submit cleanroom_hub.html as a pull request or send to your manager.</div>
+<div class="toast" id="toast"></div>
+
+<div class="confirm-dialog" id="confirm-dialog">
+  <p id="confirm-msg"></p>
+  <div class="btn-row">
+    <button class="btn btn-p btn-sm" id="confirm-yes">Clear</button>
+    <button class="btn btn-g btn-sm" onclick="closeConfirm()">Cancel</button>
+  </div>
+</div>
 
 <script>
 /* ════════════════════════════════════════════════════════════════════════
@@ -1079,11 +762,11 @@ function clone(o){return JSON.parse(JSON.stringify(o));}
 /* ════════════════════════════════════════════════════════════════════════
    SEED DATA  — written once on first boot; updated via Export for GitHub
 ════════════════════════════════════════════════════════════════════════ */
-const SEED_RUNS=/*SEED_RUNS_START*/[{"id":1777994503443,"user":"J. Brown","zone":"Zone B — Deposition & Etch","tool":"Thermal evaporator","outcome":"pass","process":"Al / Au Deposition ","deviation":"none","ppe":"full","yield":95,"duration":150,"samples":1,"params":"| Pressure: 6 mtorr | Temperature: <40C | Resist: PMMA A4 495 (200 nm) | 80 % on source 1 to evaporate 50 nm of Al at a rate of 0.12 kA/s | 15 min cooldown period to allow T<30C | 85% on source 2 to evaporate 10 nm of Au at a rate of 0.02 kA/s |","notes":"Pressure stalled at 6 mtorr, top up with liquid nitrogen next time. Cooldown took longer than normal, may be related to the vacuum pressure. Good yield, process passes but the quality of devices performance is low, maybe partially oxidised alumminium layer. ","dt":"2026-05-05"},{"id":"r1777823414762","user":"J Brown","zone":"Zone B — Deposition & Etch","tool":"Thermal evaporator","outcome":"pass","dt":"2026-05-03T16:43","process":"Al/Au Deposition","substrate":"GaAs <100>","duration":150,"samples":1,"yield":100,"deviation":"none","ppe":"full","params":"Resist: PMMA A4 495 | 80 % on source 1 to evaporate Al at a rate of 0.1 kA/s | 85% on source 2 to evaporate Au at a rate of 0.02 kA/s ","notes":"Developed the night before and left under vacuum in the thermal evaporator overnight to dry out."},{"id":"d1","user":"A. Patel","dt":"2025-04-27T09:30","zone":"Zone A — Lithography","tool":"Mask aligner (MA6)","process":"AZ1512 positive resist spin","substrate":"4″ Si (100)","duration":50,"samples":4,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s","notes":""},{"id":"d2","user":"A. Patel","dt":"2025-04-28T10:15","zone":"Zone A — Lithography","tool":"Mask aligner (MA6)","process":"AZ1512 positive resist spin","substrate":"4″ Si (100)","duration":52,"samples":4,"yield":75,"outcome":"partial","deviation":"minor","ppe":"full","params":"Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6.5s","notes":"One sample had edge bead issues"},{"id":"d3","user":"R. Chen","dt":"2025-04-26T14:00","zone":"Zone B — Deposition & Etch","tool":"RIE etcher (Oxford)","process":"SiO2 etch CF4/CHF3","substrate":"4″ Si with 500nm SiO2","duration":35,"samples":6,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"CF4: 20 sccm | CHF3: 10 sccm | Power: 100W | Pressure: 50mT","notes":""},{"id":"d4","user":"R. Chen","dt":"2025-04-27T11:00","zone":"Zone B — Deposition & Etch","tool":"RIE etcher (Oxford)","process":"SiO2 etch CF4/CHF3","substrate":"4″ Si with 500nm SiO2","duration":38,"samples":6,"yield":83,"outcome":"partial","deviation":"none","ppe":"full","params":"CF4: 20 sccm | CHF3: 10 sccm | Power: 100W | Pressure: 50mT","notes":"Etch rate slightly low — chamber due for clean?"},{"id":"d5","user":"L. Okafor","dt":"2025-04-25T09:00","zone":"Zone C — Metrology & Prep","tool":"Profilometer","process":"Step height measurement","substrate":"Patterned Si wafer","duration":20,"samples":8,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"","notes":""},{"id":"d6","user":"L. Okafor","dt":"2025-04-26T09:30","zone":"Zone C — Metrology & Prep","tool":"SEM","process":"Cross-section imaging","substrate":"Cleaved Si","duration":60,"samples":3,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"Acc. voltage: 5 kV | WD: 10 mm","notes":""},{"id":"d7","user":"B. Novak","dt":"2025-04-28T13:00","zone":"Zone A — Lithography","tool":"Spin coater","process":"SU-8 2025 thick film","substrate":"4″ Si","duration":25,"samples":2,"yield":50,"outcome":"partial","deviation":"major","ppe":"minor-gap","params":"Spin: 2000 rpm | Bake: 95°C 3min | Thickness target: 25µm","notes":"Edge delamination on both samples — suspect adhesion issue. Major deviation: modified bake time"},{"id":"d8","user":"A. Patel","dt":"2025-04-29T09:00","zone":"Zone A — Lithography","tool":"Mask aligner (MA6)","process":"AZ1512 positive resist spin","substrate":"4″ Si (100)","duration":51,"samples":4,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s","notes":""},{"id":"d9","user":"R. Chen","dt":"2025-04-28T14:30","zone":"Zone B — Deposition & Etch","tool":"PECVD","process":"SiN deposition","substrate":"4″ Si","duration":90,"samples":4,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"SiH4: 20 sccm | NH3: 20 sccm | N2: 500 sccm | RF: 20W | Temp: 300°C","notes":""},{"id":"d10","user":"J. Williams","dt":"2025-04-27T15:00","zone":"Zone B — Deposition & Etch","tool":"Thermal evaporator","process":"Au deposition","substrate":"SiO2/Si","duration":45,"samples":5,"yield":80,"outcome":"partial","deviation":"none","ppe":"full","params":"Rate: 0.5 A/s | Thickness: 100nm | Pressure: 2e-6 Torr","notes":"Slight thickness non-uniformity across wafer"},{"id":"d11","user":"J. Williams","dt":"2025-04-28T10:00","zone":"Zone B — Deposition & Etch","tool":"Thermal evaporator","process":"Au deposition","substrate":"SiO2/Si","duration":47,"samples":5,"yield":60,"outcome":"partial","deviation":"none","ppe":"full","params":"Rate: 0.5 A/s | Thickness: 100nm | Pressure: 3e-6 Torr","notes":"Uniformity worse. Filament age?"},{"id":"d12","user":"B. Novak","dt":"2025-04-29T11:30","zone":"Zone A — Lithography","tool":"Stepper (i-line)","process":"Fine feature litho 1µm","substrate":"4″ Si","duration":70,"samples":3,"yield":0,"outcome":"fail","deviation":"minor","ppe":"full","params":"Focus: -0.3µm | Exp: 140 mJ/cm2","notes":"Complete resolution failure — likely contamination on lens or wafer chuck"},{"id":"d13","user":"L. Okafor","dt":"2025-04-29T09:00","zone":"Zone C — Metrology & Prep","tool":"Profilometer","process":"Roughness scan","substrate":"Deposited film","duration":15,"samples":6,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"","notes":""},{"id":"d14","user":"A. Patel","dt":"2025-04-30T09:15","zone":"Zone A — Lithography","tool":"Mask aligner (MA6)","process":"AZ1512 positive resist spin","substrate":"4″ Si (100)","duration":50,"samples":4,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"Spin: 4000 rpm | Bake: 100°C 60s | Exp: 6s","notes":""},{"id":"d15","user":"R. Chen","dt":"2025-04-30T13:00","zone":"Zone B — Deposition & Etch","tool":"RIE etcher (Oxford)","process":"Si etch SF6","substrate":"4″ Si","duration":40,"samples":4,"yield":100,"outcome":"pass","deviation":"none","ppe":"full","params":"SF6: 40 sccm | Power: 150W | Pressure: 100mT","notes":""}]/*SEED_RUNS_END*/;
+const SEED_RUNS=/*SEED_RUNS_START*/[{"id":1778004440674,"user":"J Brown","zone":"Zone B — Deposition & Etch","tool":"Thermal Evaporator","outcome":"pass","process":"Al/Au","deviation":"none","ppe":"full","yield":95,"duration":150,"samples":1,"params":"80% for 50 nm @ 1.5 nm/s & 85% for 10 nm @ 0.2 nm/s ","notes":"Pressure was quite high. ","dt":"2026-05-05"}]/*SEED_RUNS_END*/;
 
-const SEED_RATES=/*SEED_RATES_START*/[{"id":1,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":45.2,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"Post-clean baseline","dt":"2025-04-01"},{"id":2,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":44.8,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"","dt":"2025-04-05"},{"id":3,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":45.5,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"","dt":"2025-04-10"},{"id":4,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":44.1,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"","dt":"2025-04-15"},{"id":5,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":43.2,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"Slight drop","dt":"2025-04-20"},{"id":6,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":41.5,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"Continuing to drop","dt":"2025-04-25"},{"id":7,"tool":"RIE etcher (Oxford)","type":"etch","recipe":"SiO2 etch CF4/CHF3","measured":38.8,"unit":"nm/min","target":45,"power":100,"pressure":50,"temp":null,"flow":30,"rt":5,"notes":"Significant — chamber clean needed?","dt":"2025-04-30"},{"id":8,"tool":"PECVD","type":"deposition","recipe":"SiN PECVD 300°C","measured":12.1,"unit":"nm/min","target":12,"power":20,"pressure":900,"temp":300,"flow":540,"rt":10,"notes":"","dt":"2025-04-02"},{"id":9,"tool":"PECVD","type":"deposition","recipe":"SiN PECVD 300°C","measured":12.3,"unit":"nm/min","target":12,"power":20,"pressure":900,"temp":300,"flow":540,"rt":10,"notes":"","dt":"2025-04-08"},{"id":10,"tool":"PECVD","type":"deposition","recipe":"SiN PECVD 300°C","measured":11.9,"unit":"nm/min","target":12,"power":20,"pressure":900,"temp":300,"flow":540,"rt":10,"notes":"","dt":"2025-04-14"},{"id":11,"tool":"PECVD","type":"deposition","recipe":"SiN PECVD 300°C","measured":12,"unit":"nm/min","target":12,"power":20,"pressure":900,"temp":300,"flow":540,"rt":10,"notes":"","dt":"2025-04-21"},{"id":12,"tool":"PECVD","type":"deposition","recipe":"SiN PECVD 300°C","measured":12.2,"unit":"nm/min","target":12,"power":20,"pressure":900,"temp":300,"flow":540,"rt":10,"notes":"","dt":"2025-04-28"},{"id":13,"tool":"Thermal evaporator","type":"deposition","recipe":"Au deposition","measured":0.52,"unit":"Å/s","target":0.5,"power":null,"pressure":2.1,"temp":null,"flow":null,"rt":10,"notes":"","dt":"2025-04-03"},{"id":14,"tool":"Thermal evaporator","type":"deposition","recipe":"Au deposition","measured":0.51,"unit":"Å/s","target":0.5,"power":null,"pressure":2.2,"temp":null,"flow":null,"rt":10,"notes":"","dt":"2025-04-10"},{"id":15,"tool":"Thermal evaporator","type":"deposition","recipe":"Au deposition","measured":0.49,"unit":"Å/s","target":0.5,"power":null,"pressure":2.1,"temp":null,"flow":null,"rt":10,"notes":"","dt":"2025-04-17"},{"id":16,"tool":"Thermal evaporator","type":"deposition","recipe":"Au deposition","measured":0.46,"unit":"Å/s","target":0.5,"power":null,"pressure":2.5,"temp":null,"flow":null,"rt":10,"notes":"Filament aging?","dt":"2025-04-24"},{"id":17,"tool":"Thermal evaporator","type":"deposition","recipe":"Au deposition","measured":0.42,"unit":"Å/s","target":0.5,"power":null,"pressure":3.1,"temp":null,"flow":null,"rt":10,"notes":"Rate drop + pressure creep","dt":"2025-04-30"},{"id":18,"tool":"DRIE (Bosch)","type":"etch","recipe":"Si Bosch DRIE","measured":2.8,"unit":"µm/min","target":3,"power":600,"pressure":30,"temp":20,"flow":400,"rt":3,"notes":"","dt":"2025-04-05"},{"id":19,"tool":"DRIE (Bosch)","type":"etch","recipe":"Si Bosch DRIE","measured":2.9,"unit":"µm/min","target":3,"power":600,"pressure":30,"temp":20,"flow":400,"rt":3,"notes":"","dt":"2025-04-12"},{"id":20,"tool":"DRIE (Bosch)","type":"etch","recipe":"Si Bosch DRIE","measured":3.1,"unit":"µm/min","target":3,"power":600,"pressure":30,"temp":20,"flow":400,"rt":3,"notes":"","dt":"2025-04-19"},{"id":21,"tool":"DRIE (Bosch)","type":"etch","recipe":"Si Bosch DRIE","measured":3,"unit":"µm/min","target":3,"power":600,"pressure":30,"temp":20,"flow":400,"rt":3,"notes":"","dt":"2025-04-26"}]/*SEED_RATES_END*/;
+const SEED_RATES=/*SEED_RATES_START*/[{"id":1778004540289,"tool":"Thermal Evaporator","type":"deposition","recipe":"Al","measured":1.5,"unit":"nm/s","target":1.5,"power":80,"pressure":6,"temp":30,"flow":null,"rt":120,"notes":"Rate reduced towards the end, load more material into the crucible next time.","dt":"2026-05-05"}]/*SEED_RATES_END*/;
 
-const SEED_NOTICES=/*SEED_NOTICES_START*/[{"id":1,"title":"RIE etcher (Oxford) — etch rate declining","body":"SiO2 CF4/CHF3 rate has dropped ~14% over 4 weeks. Log a calibration run before your next etch.","sev":"warning","zone":"Zone B — Deposition & Etch","author":"Prof. M. Singh","dt":"2025-04-30"},{"id":2,"title":"Thermal evaporator — filament replacement due","body":"Au deposition rate declining and base pressure creeping. Use e-beam for critical depositions in the interim.","sev":"danger","zone":"Zone B — Deposition & Etch","author":"Facility Manager","dt":"2025-04-29"}]/*SEED_NOTICES_END*/;
+const SEED_NOTICES=/*SEED_NOTICES_START*/[{"id":1778004631599,"title":"Exhaust Fan Works","body":"Exhaust fan works mean that all plasma tool will be unavailable until 13th of May.","sev":"info","zone":"Zone B — Deposition & Etch","author":"A Murray","dt":"2026-05-05"}]/*SEED_NOTICES_END*/;
 
 const SEED_RECIPES=/*SEED_RECIPES_START*/[{"id":1,"name":"SiO2 etch CF4/CHF3 — standard","tool":"RIE etcher (Oxford)","type":"etch","material":"SiO2","desc":"Reliable isotropic SiO2 etch for patterning 500 nm thermal oxide on Si. Good selectivity over Si (~10:1). Suitable for contact holes and isolation trenches.","params":[["CF4 flow","20 sccm"],["CHF3 flow","10 sccm"],["RF power","100 W"],["Pressure","50 mTorr"],["DC bias","~180 V"],["Chuck temp","20 °C"],["He backside cooling","10 Torr"]],"rate":45,"runit":"nm/min","expYield":92,"substrate":"4″ Si (100)","thickness":"500 nm thermal SiO2","tips":"Condition chamber with 5 min dummy run before first wafer. Etch rate drops ~8% as electrode ages — confirm with profilometer before critical runs.","tags":["CMOS-compatible","oxide-etch","standard"],"status":"validated","owner":"R. Chen","group":"MEMS Lab","version":3,"forks":7,"uses":23,"avgYield":91,"created":"2024-11-15","updated":"2025-03-20","liveRate":38.8,"liveDrift":-14,"versions":[{"v":3,"date":"2025-03-20","note":"Increased CHF3 to improve selectivity over SiN"},{"v":2,"date":"2025-01-10","note":"Pressure adjusted to 50 mTorr — better uniformity"},{"v":1,"date":"2024-11-15","note":"Initial recipe"}],"comments":[{"author":"A. Patel","date":"2025-04-20","text":"Confirmed works on 300 nm PECVD oxide too. Rate was 42 nm/min on last run — slightly low, probably chamber condition."},{"author":"L. Okafor","date":"2025-03-25","text":"Used for via etching. Had to extend time 15% due to loading effect with 8 dies per wafer."}]},{"id":2,"name":"SiN PECVD 300 °C — standard","tool":"PECVD","type":"deposition","material":"SiN","desc":"Low-stress silicon nitride for passivation and hard mask. RI ~2.0 at 633 nm. Suitable for CMOS back-end and photonic cladding.","params":[["SiH4 flow","20 sccm"],["NH3 flow","20 sccm"],["N2 flow","500 sccm"],["RF power","20 W"],["Pressure","900 mTorr"],["Temperature","300 °C"]],"rate":12,"runit":"nm/min","expYield":96,"substrate":"4″ Si or glass","thickness":"50–500 nm","tips":"Run a dummy wafer first if chamber idle >48 h. Film stress is sensitive to NH3:SiH4 ratio — do not adjust without re-characterising.","tags":["CMOS-compatible","low-temperature","passivation","hard-mask"],"status":"validated","owner":"R. Chen","group":"MEMS Lab","version":4,"forks":11,"uses":31,"avgYield":95,"created":"2024-09-02","updated":"2025-04-10","liveRate":12.2,"liveDrift":1.7,"versions":[{"v":4,"date":"2025-04-10","note":"Reduced N2 to 500 sccm — lower pinhole density"},{"v":1,"date":"2024-09-02","note":"Initial recipe"}],"comments":[{"author":"J. Williams","date":"2025-04-18","text":"RI = 1.97 @ 1550 nm — consistent with previous runs. Throughput excellent."}]},{"id":3,"name":"Au deposition — thermal evaporation","tool":"Thermal evaporator","type":"deposition","material":"Au","desc":"Standard gold deposition for contact metallisation and lift-off patterning. 5 nm Ti adhesion layer recommended.","params":[["Target rate","0.5 Å/s"],["Thickness","100 nm"],["Base pressure","<3×10⁻⁶ Torr"],["Ti adhesion layer","5 nm @ 0.2 Å/s"],["Substrate rotation","yes"]],"rate":0.5,"runit":"Å/s","expYield":82,"substrate":"SiO2/Si or patterned resist","thickness":"100 nm Au + 5 nm Ti","tips":"Monitor base pressure — above 3×10⁻⁶ Torr Au quality degrades. Rate instability or rising base pressure indicates filament end-of-life.","tags":["metallisation","lift-off","contact"],"status":"validated","owner":"J. Williams","group":"Nano Devices","version":2,"forks":5,"uses":14,"avgYield":80,"created":"2025-01-20","updated":"2025-04-01","liveRate":0.42,"liveDrift":-16,"versions":[{"v":2,"date":"2025-04-01","note":"Added Ti adhesion layer step"},{"v":1,"date":"2025-01-20","note":"Initial recipe"}],"comments":[{"author":"A. Patel","date":"2025-04-28","text":"NOTE: Rate has been dropping (0.52 → 0.42 Å/s) and base pressure is creeping. Filament replacement overdue — use e-beam for critical runs."}]},{"id":4,"name":"Si Bosch DRIE — deep trench","tool":"DRIE (Bosch)","type":"etch","material":"Si","desc":"High aspect ratio deep silicon etching. Achieves >20:1 aspect ratio with scalloping <50 nm. For MEMS, TSVs, microfluidic channels.","params":[["Etch step SF6","200 sccm, 2.5 s"],["Passivation C4F8","100 sccm, 2.0 s"],["ICP power","2500 W"],["Bias power","35 W"],["Pressure (etch)","30 mTorr"],["Chuck temp","20 °C"]],"rate":3,"runit":"µm/min","expYield":94,"substrate":"4″ Si (100), 500 µm","thickness":"target 50–500 µm depth","tips":"Mask selectivity ~80:1 with SPR220-7. Run SEM cross-section at 25 µm depth to verify scalloping before committing. Loading effect: rate drops ~5% per 10% increase in open area.","tags":["MEMS","high-aspect-ratio","deep-etch","TSV"],"status":"validated","owner":"B. Novak","group":"Photonics Group","version":2,"forks":4,"uses":18,"avgYield":93,"created":"2025-02-10","updated":"2025-04-22","liveRate":3,"liveDrift":0,"versions":[{"v":2,"date":"2025-04-22","note":"Reduced bias to 35 W — better scallop control"},{"v":1,"date":"2025-02-10","note":"Initial recipe"}],"comments":[{"author":"R. Chen","date":"2025-04-25","text":"Used for microfluidic channels (200 µm). Rate stable, scalloping ~35 nm — within spec."}]},{"id":5,"name":"AZ1512 positive resist — standard","tool":"Mask aligner (MA6)","type":"lithography","material":"AZ1512","desc":"Standard positive photoresist for features ≥2 µm. Suitable for lift-off, wet etch, and RIE masking on Si, glass, and dielectric surfaces.","params":[["HMDS prime","120 °C 2 min (hotplate)"],["Spin speed","4000 rpm, 30 s"],["Softbake","100 °C 60 s (hotplate)"],["Exposure","6 s (MA6 ~10 mW/cm²)"],["Developer","MF319, 60 s, 20 °C"],["Expected thickness","~1.5 µm"]],"rate":null,"runit":null,"expYield":90,"substrate":"4″ Si, glass, or dielectric films","thickness":"~1.5 µm resist","tips":"HMDS is mandatory on bare oxide — without it edge adhesion fails. Softbake on a levelled hotplate. Expose within 30 min of softbake. Recalculate exposure if lamp intensity has drifted.","tags":["lithography","positive-resist","lift-off","etch-mask","standard"],"status":"validated","owner":"A. Patel","group":"Photonics Group","version":3,"forks":9,"uses":38,"avgYield":91,"created":"2024-08-01","updated":"2025-04-15","liveRate":null,"liveDrift":null,"versions":[{"v":3,"date":"2025-04-15","note":"Added HMDS step"},{"v":2,"date":"2024-12-10","note":"Developer time extended to 60 s"},{"v":1,"date":"2024-08-01","note":"Initial recipe"}],"comments":[{"author":"B. Novak","date":"2025-04-20","text":"For lift-off: chlorobenzene soak 60 s before development gives good undercut profile."},{"author":"R. Chen","date":"2025-03-15","text":"Exposure time needs to be 7 s on i-line stepper — do not use this recipe for stepper without adjustment."}]},{"id":6,"name":"SU-8 2025 thick film — microfluidics","tool":"Spin coater","type":"lithography","material":"SU-8 2025","desc":"Thick negative photoresist for MEMS microfluidic channels and masters. Target 25 µm. Very high aspect ratio capable (>10:1).","params":[["Spin speed","2000 rpm, 30 s"],["Ramp rate","300 rpm/s"],["Softbake","65 °C 1 min → 95 °C 3 min"],["Exposure dose","240 mJ/cm²"],["Post-exposure bake","65 °C 1 min → 95 °C 3 min"],["Developer","SU-8 developer, 3.5 min"]],"rate":null,"runit":null,"expYield":72,"substrate":"4″ Si (dehydrate 200 °C 30 min)","thickness":"~25 µm SU-8","tips":"Dehydration bake is critical — most failures are adhesion-related. Ramp softbake temperature slowly or film cracks. SU-8 developer is MEK-based — LEV hood and nitrile gloves required.","tags":["MEMS","microfluidics","thick-resist","negative-resist"],"status":"draft","owner":"B. Novak","group":"Photonics Group","version":1,"forks":2,"uses":5,"avgYield":68,"created":"2025-03-01","updated":"2025-04-28","liveRate":null,"liveDrift":null,"versions":[{"v":1,"date":"2025-03-01","note":"Initial draft — still optimising"}],"comments":[{"author":"A. Patel","date":"2025-04-10","text":"Had delamination at edges. 250 °C dehydration bake instead of 200 °C resolved it."}]},{"id":7,"name":"RCA clean — standard pre-process","tool":"Wet bench (acids)","type":"clean","material":"Si wafer","desc":"Standard RCA-1 and RCA-2 clean before thermal oxidation, diffusion, or any high-temperature process. Removes organics, particles, and metallic contamination.","params":[["RCA-1 (SC-1)","NH4OH:H2O2:H2O 1:1:5, 75 °C, 10 min"],["DI rinse","3× overflow, >18 MΩ·cm"],["HF dip (optional)","HF:H2O 1:50, 30 s"],["RCA-2 (SC-2)","HCl:H2O2:H2O 1:1:6, 75 °C, 10 min"],["DI rinse","3× overflow, spin-dry"],["Total time","~45 min"]],"rate":null,"runit":null,"expYield":99,"substrate":"4″ Si wafer","thickness":"n/a","tips":"Prepare RCA-1 fresh — do not store. Add H2O2 last. Solutions are exothermic — heat on hotplate to 75 °C, do not exceed 80 °C. HF dip requires HF buddy protocol (Safety Guide §5).","tags":["clean","pre-process","standard","CMOS-compatible","critical"],"status":"validated","owner":"R. Chen","group":"MEMS Lab","version":2,"forks":3,"uses":41,"avgYield":99,"created":"2024-07-15","updated":"2025-02-28","liveRate":null,"liveDrift":null,"versions":[{"v":2,"date":"2025-02-28","note":"Added HF dip; updated for UK COSHH compliance"},{"v":1,"date":"2024-07-15","note":"Initial recipe"}],"comments":[{"author":"L. Okafor","date":"2025-04-01","text":"Water break test passes every time after this clean. Essential before any thermal process."}]},{"id":1777972311618,"name":"Al / Au deposition on PMMA A4 495 (200 nm) resist","tool":"Thermal evaporator","type":"deposition","material":"Al / Au","desc":"Deposit 50 nm Al film using source 1 aiming for a rate of 15 A/s, followed by a 10 nm Au film using source 2 aiming for a rate of 2 A/s.","params":[["Pressure","<6e-6 mbar"],["Temperature","<40 C"],["Voltage source 1`","80 %"],["Voltage source 2","85 %"]],"rate":15,"runit":"Å/s","expYield":90,"avgYield":90,"substrate":"GaAs","thickness":"50 nm","tips":"Check crucible circuit continuity for both sources before pumping down and after pumping down.","tags":[],"status":"validated","owner":"A. Patel","group":"Photonics Group","version":1,"forks":1,"uses":0,"liveRate":null,"liveDrift":null,"created":"2026-05-05","updated":"2026-05-05","versions":[{"v":1,"date":"2026-05-05","note":"Initial submission"}],"comments":[]},{"id":1777996572110,"name":"Al / Au deposition on PMMA A4 495 (200 nm) resist (fork)","tool":"Thermal evaporator","type":"deposition","material":"Al / Au","desc":"Deposit 50 nm Al film using source 1 aiming for a rate of 15 A/s, followed by a 10 nm Au film using source 2 aiming for a rate of 2 A/s.","params":[["Pressure","<6e-6 mbar"],["Temperature","<40 C"],["Voltage source 1`","80 %"],["Voltage source 2","85 %"]],"rate":15,"runit":"Å/s","expYield":90,"avgYield":90,"substrate":"GaAs","thickness":"50 nm","tips":"Check crucible circuit continuity for both sources before pumping down and after pumping down.","tags":[],"status":"draft","owner":"J. Brown","group":"Photonics Group","version":1,"forks":0,"uses":0,"liveRate":null,"liveDrift":null,"created":"2026-05-05","updated":"2026-05-05","versions":[{"v":1,"date":"2026-05-05","note":"Forked from \"Al / Au deposition on PMMA A4 495 (200 nm) resist\" v1 by A. Patel"}],"comments":[]}]/*SEED_RECIPES_END*/;
 
@@ -1119,11 +802,12 @@ function doLogin(){
   document.getElementById('tb-role').textContent  = CURRENT_ROLE;
   document.getElementById('tb-role').style.background = CURRENT_ROLE==='pi'?'#533BA7':'var(--teal)';
   // show/hide PI-only elements
-  document.getElementById('pi-notices-card').style.display = CURRENT_ROLE==='pi'?'':'none';
+  // Role class drives pi-only UI visibility via CSS (robust to outerHTML export)
+  document.getElementById('app').classList.toggle('role-pi', CURRENT_ROLE==='pi');
   updateBanners();
   renderStreak();
   renderNotices();
-  addParamRow();addParamRow();addParamRow();
+  // param rows are added lazily when the new-recipe tab is opened
 }
 
 function doLogout(){
@@ -1179,6 +863,10 @@ function exportHTML(){
       const cleaned = style.replace(/\s*display\s*:[^;]+;?/g, '').trim();
       return cleaned ? '<div id="app"' + pre + 'style="' + cleaned + '"' : '<div id="app"' + pre;
     });
+    // Also strip role class so exported file is role-neutral on open
+    out = out.replace(/ class="role-pi"/, '');
+    out = out.replace(/ class="([^"]*)"/, ' class="$1"');
+    out = out.replace(/ class="([^"]*) role-pi"/, ' class="$1"');
 
     // ── Splice live localStorage data into seed marker positions ─────────
     const replaceSeed = (s, tag, data) => {
@@ -1227,15 +915,25 @@ function exportHTML(){
 }
 
 function confirmReset(section){
-  if(!confirm('Reset '+section+' to original demo data? Your entries will be deleted.')) return;
-  if(section==='tracker'){
-    RUNS=clone(SEED_RUNS);RATES=clone(SEED_RATES);NOTICES=clone(SEED_NOTICES);STREAKS={};
-    save(KEYS.runs,RUNS);save(KEYS.rates,RATES);save(KEYS.notices,NOTICES);save(KEYS.streaks,STREAKS);
-    renderStreak();renderNotices();
-  } else {
-    RECIPES=clone(SEED_RECIPES);save(KEYS.recipes,RECIPES);
-  }
-  updateBanners();toast('Reset to demo data.');
+  // iOS Safari blocks window.confirm() — use inline dialog instead
+  document.getElementById('confirm-msg').textContent =
+    'Clear ALL ' + section + ' data? This cannot be undone.';
+  document.getElementById('confirm-yes').onclick = function(){
+    closeConfirm();
+    if(section==='tracker'){
+      RUNS=clone(SEED_RUNS);RATES=clone(SEED_RATES);NOTICES=clone(SEED_NOTICES);STREAKS={};
+      save(KEYS.runs,RUNS);save(KEYS.rates,RATES);
+      save(KEYS.notices,NOTICES);save(KEYS.streaks,STREAKS);
+      renderStreak();renderNotices();
+    } else {
+      RECIPES=clone(SEED_RECIPES);save(KEYS.recipes,RECIPES);
+    }
+    updateBanners();toast('All data cleared.');
+  };
+  document.getElementById('confirm-dialog').classList.add('open');
+}
+function closeConfirm(){
+  document.getElementById('confirm-dialog').classList.remove('open');
 }
 
 function updateBanners(){
@@ -1310,7 +1008,7 @@ function switchRecipeTab(name,btn){
   closeDetail();
   if(name==='browse')renderLibrary();
   if(name==='mine')renderMine();
-  if(name==='new'&&document.getElementById('param-rows').children.length===0){addParamRow();addParamRow();addParamRow();}
+  if(name==='new'){const pr=document.getElementById('param-rows');if(pr&&pr.children.length===0){addParamRow();addParamRow();addParamRow();}}
 }
 
 /* ════════════════════════════════════════════════════════════════════════
