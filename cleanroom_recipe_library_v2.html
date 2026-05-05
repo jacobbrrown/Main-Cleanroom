@@ -1,0 +1,799 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary);background:var(--color-background-tertiary)}
+.topbar{background:#1B3A6B;color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:48px}
+.topbar-brand{font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px}
+.topbar-nav{display:flex;gap:4px}
+.tnav-btn{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid rgba(255,255,255,.25);background:none;color:rgba(255,255,255,.75);font-family:var(--font-sans)}
+.tnav-btn.active{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4)}
+.main{max-width:920px;margin:0 auto;padding:20px 16px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin-bottom:14px}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{font-size:13px;font-family:var(--font-sans);color:var(--color-text-primary);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 10px;width:100%}
+textarea{resize:vertical}
+.btn{padding:7px 15px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans);border:none;transition:opacity .15s}
+.btn-p{background:#1B3A6B;color:#fff}.btn-p:hover{opacity:.85}.btn-p:disabled{opacity:.45;cursor:not-allowed}
+.btn-g{background:none;border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary)}.btn-g:hover{background:var(--color-background-secondary)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-green{background:#EAF3DE;color:#27500A}
+.badge-amber{background:#FAEEDA;color:#633806}
+.badge-red{background:#FCEBEB;color:#791F1F}
+.badge-gray{background:#F1EFE8;color:#444441}
+.badge-teal{background:#E1F5EE;color:#085041}
+.badge-purple{background:#EEEDFE;color:#3C3489}
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--color-border-tertiary);background:none;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.pill.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:transparent}
+.frow{display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap}
+.frow input,.frow select{width:auto;font-size:12px}
+.divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:14px 0}
+.recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.recipe-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;cursor:pointer;transition:border-color .15s;display:flex;flex-direction:column;gap:8px}
+.recipe-card:hover{border-color:var(--color-border-primary)}
+.recipe-card.featured{border-color:#185FA5;border-width:1px}
+.rc-title{font-size:13px;font-weight:500;line-height:1.35}
+.rc-tool{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:5px;margin-top:3px}
+.rc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rc-params{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:7px 9px;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.rc-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:2px}
+.rc-stats{display:flex;gap:8px;font-size:11px;color:var(--color-text-secondary)}
+.rate-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500}
+.empty-state{text-align:center;padding:48px 20px;color:var(--color-text-secondary)}
+.metric-sm{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
+.metric-sm-val{font-size:20px;font-weight:500;line-height:1}
+.metric-sm-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:3px}
+
+/* ── Detail panel — inline below grid, no overlay ─────────────────────── */
+#detail-section{display:none;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:14px;overflow:hidden}
+#detail-section.open{display:block}
+.detail-header{padding:18px 20px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.detail-body{padding:18px 20px;background:var(--color-background-primary)}
+.tab-inner{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:16px;flex-wrap:wrap}
+.tab-i{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--color-text-secondary);border:none;border-bottom:2px solid transparent;margin-bottom:-0.5px;background:none;font-family:var(--font-sans)}
+.tab-i.active{color:var(--color-text-primary);border-bottom-color:#1B3A6B;font-weight:500}
+.param-table{width:100%;font-size:13px;border-collapse:collapse}
+.param-table td{padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:top}
+.param-table td:first-child{color:var(--color-text-secondary);width:45%;padding-right:12px}
+.param-table tr:last-child td{border-bottom:none}
+.comment-bubble{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px}
+.comment-author{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+.comment-text{font-size:13px;color:var(--color-text-primary);line-height:1.55}
+.comment-meta{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
+.version-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.version-row:last-child{border-bottom:none}
+.version-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.persist-banner{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:var(--border-radius-md);padding:9px 14px;font-size:12px;color:#27500A;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;bottom:16px;right:16px;background:#0F6E56;color:#E1F5EE;padding:10px 16px;border-radius:var(--border-radius-md);font-size:13px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}.toast.err{background:#A32D2D}
+@media(max-width:520px){.g2,.g3{grid-template-columns:1fr}.recipe-grid{grid-template-columns:1fr}}
+</style>
+
+<h2 class="sr-only">Cleanroom process recipe library with localStorage persistence — browse, create, fork and comment on process recipes</h2>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="#fff" stroke-width="1.2"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="#fff" stroke-width="1.2"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="#fff" stroke-width="1.2"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="#fff" stroke-width="1.2"/></svg>
+    Recipe Library
+  </div>
+  <div class="topbar-nav">
+    <button class="tnav-btn active" id="nav-browse" onclick="setView('browse',this)">Browse</button>
+    <button class="tnav-btn" id="nav-mine" onclick="setView('mine',this)">My recipes</button>
+    <button class="tnav-btn" id="nav-new" onclick="setView('new',this)">+ New recipe</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="persist-banner" id="persist-banner">
+    <span id="persist-msg">Loading saved data…</span>
+    <button class="btn btn-g btn-sm" onclick="confirmReset()">Reset to defaults</button>
+  </div>
+
+  <!-- ══ BROWSE ═══════════════════════════════════════════════════════════ -->
+  <div id="v-browse">
+    <div class="frow">
+      <input id="search" placeholder="Search recipes, tools, materials, tags…" style="flex:1;min-width:160px;font-size:13px" oninput="renderLibrary()">
+      <select id="f-tool" onchange="renderLibrary()" style="font-size:12px">
+        <option value="">All tools</option>
+        <option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>PECVD</option>
+        <option>Thermal evaporator</option><option>E-beam evaporator</option>
+        <option>Mask aligner (MA6)</option><option>Spin coater</option><option>Wet bench (acids)</option>
+      </select>
+      <select id="f-type" onchange="renderLibrary()" style="font-size:12px">
+        <option value="">All types</option>
+        <option value="etch">Etch</option><option value="deposition">Deposition</option>
+        <option value="lithography">Lithography</option><option value="clean">Clean</option>
+        <option value="metrology">Metrology</option>
+      </select>
+      <select id="f-status" onchange="renderLibrary()" style="font-size:12px">
+        <option value="">All statuses</option>
+        <option value="validated">Validated</option><option value="draft">Draft</option>
+      </select>
+      <span id="recipe-count" style="font-size:12px;color:var(--color-text-secondary);white-space:nowrap"></span>
+    </div>
+    <div style="margin-bottom:14px">
+      <div class="pills" id="sort-pills">
+        <button class="pill active" data-s="popular" onclick="setSort(this)">Most forked</button>
+        <button class="pill" data-s="recent" onclick="setSort(this)">Recently updated</button>
+        <button class="pill" data-s="yield" onclick="setSort(this)">Highest yield</button>
+        <button class="pill" data-s="drift" onclick="setSort(this)">Rate health</button>
+      </div>
+    </div>
+
+    <!-- Detail panel lives here, inline, above the grid when open -->
+    <div id="detail-section">
+      <div class="detail-header" id="dh"></div>
+      <div class="detail-body">
+        <div class="tab-inner" id="detail-tabs"></div>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+
+    <div class="recipe-grid" id="recipe-grid"></div>
+  </div>
+
+  <!-- ══ MY RECIPES ════════════════════════════════════════════════════════ -->
+  <div id="v-mine" style="display:none">
+    <div style="margin-bottom:16px">
+      <div style="font-size:15px;font-weight:500;margin-bottom:3px">My recipes</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Recipes you own. Only you can change the status — others contribute via comments.</div>
+    </div>
+    <div class="g4" id="my-metrics" style="margin-bottom:16px"></div>
+    <div class="recipe-grid" id="mine-grid"></div>
+  </div>
+
+  <!-- ══ NEW RECIPE ════════════════════════════════════════════════════════ -->
+  <div id="v-new" style="display:none">
+    <div class="card" style="border-left:3px solid #0E7C86;padding-left:15px">
+      <div style="font-size:15px;font-weight:500;margin-bottom:3px">Submit a new recipe</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:18px">
+        Recipes start as <span class="badge badge-amber">draft</span> and move to
+        <span class="badge badge-green">validated</span> once you confirm they work.
+        Others can fork your recipe as a starting point.
+      </div>
+      <div class="g2">
+        <div class="field"><label>Recipe name <span style="color:#A32D2D">*</span></label>
+          <input id="n-name" type="text" placeholder="e.g. SiO2 etch CF4/CHF3 high rate"></div>
+        <div class="field"><label>Tool <span style="color:#A32D2D">*</span></label>
+          <select id="n-tool">
+            <option value="">Select tool…</option>
+            <optgroup label="Etch"><option>RIE etcher (Oxford)</option><option>DRIE (Bosch)</option><option>Wet bench (acids)</option></optgroup>
+            <optgroup label="Deposition"><option>PECVD</option><option>Thermal evaporator</option><option>E-beam evaporator</option></optgroup>
+            <optgroup label="Lithography"><option>Mask aligner (MA6)</option><option>Stepper (i-line)</option><option>Spin coater</option></optgroup>
+            <optgroup label="Other"><option>Profilometer</option><option>SEM</option></optgroup>
+          </select></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Process type <span style="color:#A32D2D">*</span></label>
+          <select id="n-type"><option value="">Select…</option><option value="etch">Etch</option><option value="deposition">Deposition</option><option value="lithography">Lithography</option><option value="clean">Clean</option><option value="metrology">Metrology</option></select></div>
+        <div class="field"><label>Target material / film</label>
+          <input id="n-material" type="text" placeholder="e.g. SiO2, Si, AZ1512, Au"></div>
+      </div>
+      <div class="field"><label>Description</label>
+        <textarea id="n-desc" style="height:64px" placeholder="What is this recipe for? Substrate, film thickness, application…"></textarea></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">
+        Process parameters <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">— add as many key : value pairs as relevant</span>
+      </div>
+      <div id="param-rows"></div>
+      <button class="btn btn-g btn-sm" onclick="addParamRow()" style="margin-bottom:14px">+ Add parameter</button>
+
+      <div class="g3">
+        <div class="field"><label>Expected rate</label>
+          <input id="n-rate" type="number" min="0" step="0.01" placeholder="e.g. 45"></div>
+        <div class="field"><label>Rate unit</label>
+          <select id="n-runit"><option value="nm/min">nm / min</option><option value="Å/s">Å / s</option><option value="µm/min">µm / min</option><option value="nm/s">nm / s</option></select></div>
+        <div class="field"><label>Expected yield (%)</label>
+          <input id="n-yield" type="number" min="0" max="100" placeholder="e.g. 90"></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Substrate</label>
+          <input id="n-substrate" type="text" placeholder="e.g. 4″ Si (100), 500 µm"></div>
+        <div class="field"><label>Film / target thickness</label>
+          <input id="n-thickness" type="text" placeholder="e.g. 500 nm SiO2"></div>
+      </div>
+      <div class="field"><label>Tips / notes / known gotchas</label>
+        <textarea id="n-tips" style="height:72px" placeholder="Chamber conditioning, loading effects, failure modes, substrate prep…"></textarea></div>
+      <div class="field" style="margin-bottom:18px"><label>Tags (comma-separated)</label>
+        <input id="n-tags" type="text" placeholder="e.g. CMOS-compatible, wet-etch, low-temperature"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="submitRecipe()">Submit as draft</button>
+        <button class="btn btn-g" onclick="clearNewForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   STORAGE  — single source of truth
+   All reads and writes go through load() / save().
+   To swap to the API backend, replace load() and save() with fetch() calls.
+══════════════════════════════════════════════════════════════════════════ */
+const STORAGE_KEY = 'cr_recipes_v1';
+const CURRENT_USER = 'A. Patel';
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function save(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch(e) {
+    toast('Could not save — localStorage may be full or disabled.', true);
+    return false;
+  }
+}
+
+function confirmReset() {
+  if (confirm('Reset all recipes to the built-in defaults? This will delete any recipes, comments, or forks you have added.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    RECIPES = deepClone(SEED_RECIPES);
+    save(RECIPES);
+    updatePersistBanner();
+    renderLibrary();
+    toast('Reset to defaults.');
+  }
+}
+
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SEED DATA  — only used on first ever load
+══════════════════════════════════════════════════════════════════════════ */
+const SEED_RECIPES = [
+  {id:1,name:'SiO2 etch CF4/CHF3 — standard',tool:'RIE etcher (Oxford)',type:'etch',material:'SiO2',
+   desc:'Reliable isotropic SiO2 etch for patterning 500 nm thermal oxide on Si. Good selectivity over Si (~10:1). Suitable for contact holes and isolation trenches.',
+   params:[['CF4 flow','20 sccm'],['CHF3 flow','10 sccm'],['RF power','100 W'],['Pressure','50 mTorr'],['DC bias','~180 V'],['Chuck temp','20 °C'],['He backside cooling','10 Torr']],
+   rate:45,runit:'nm/min',expYield:92,substrate:'4″ Si (100)',thickness:'500 nm thermal SiO2',
+   tips:'Condition chamber with 5 min dummy run before first wafer. Etch rate drops ~8% as electrode ages — confirm with profilometer before critical runs.',
+   tags:['CMOS-compatible','oxide-etch','standard'],
+   status:'validated',owner:'R. Chen',group:'MEMS Lab',version:3,forks:7,uses:23,avgYield:91,
+   created:'2024-11-15',updated:'2025-03-20',
+   liveRate:38.8,liveDrift:-14.0,
+   versions:[{v:3,date:'2025-03-20',note:'Increased CHF3 to improve selectivity over SiN'},{v:2,date:'2025-01-10',note:'Pressure adjusted to 50 mTorr — better uniformity'},{v:1,date:'2024-11-15',note:'Initial recipe'}],
+   comments:[{author:'A. Patel',date:'2025-04-20',text:'Confirmed works on 300 nm PECVD oxide too. Rate was 42 nm/min on last run — slightly low, probably chamber condition.'},{author:'L. Okafor',date:'2025-03-25',text:'Used for via etching. Had to extend time 15% due to loading effect with 8 dies per wafer.'}]},
+
+  {id:2,name:'SiN PECVD 300 °C — standard',tool:'PECVD',type:'deposition',material:'SiN',
+   desc:'Low-stress silicon nitride for passivation and hard mask. RI ~2.0 at 633 nm. Suitable for CMOS back-end and photonic cladding.',
+   params:[['SiH4 flow','20 sccm'],['NH3 flow','20 sccm'],['N2 flow','500 sccm'],['RF power','20 W'],['Pressure','900 mTorr'],['Temperature','300 °C']],
+   rate:12,runit:'nm/min',expYield:96,substrate:'4″ Si or glass',thickness:'50–500 nm',
+   tips:'Run a dummy wafer first if chamber idle >48 h. Film stress is sensitive to NH3:SiH4 ratio — do not adjust without re-characterising.',
+   tags:['CMOS-compatible','low-temperature','passivation','hard-mask'],
+   status:'validated',owner:'R. Chen',group:'MEMS Lab',version:4,forks:11,uses:31,avgYield:95,
+   created:'2024-09-02',updated:'2025-04-10',
+   liveRate:12.2,liveDrift:1.7,
+   versions:[{v:4,date:'2025-04-10',note:'Reduced N2 to 500 sccm — lower pinhole density'},{v:1,date:'2024-09-02',note:'Initial recipe'}],
+   comments:[{author:'J. Williams',date:'2025-04-18',text:'RI = 1.97 @ 1550 nm — consistent with previous runs. Throughput excellent.'}]},
+
+  {id:3,name:'Au deposition — thermal evaporation',tool:'Thermal evaporator',type:'deposition',material:'Au',
+   desc:'Standard gold deposition for contact metallisation and lift-off patterning. 5 nm Ti adhesion layer recommended.',
+   params:[['Target rate','0.5 Å/s'],['Thickness','100 nm'],['Base pressure','<3×10⁻⁶ Torr'],['Ti adhesion layer','5 nm @ 0.2 Å/s'],['Substrate rotation','yes']],
+   rate:0.5,runit:'Å/s',expYield:82,substrate:'SiO2/Si or patterned resist',thickness:'100 nm Au + 5 nm Ti',
+   tips:'Monitor base pressure — above 3×10⁻⁶ Torr Au quality degrades. Rate instability or rising base pressure indicates filament end-of-life.',
+   tags:['metallisation','lift-off','contact'],
+   status:'validated',owner:'J. Williams',group:'Nano Devices',version:2,forks:5,uses:14,avgYield:80,
+   created:'2025-01-20',updated:'2025-04-01',
+   liveRate:0.42,liveDrift:-16.0,
+   versions:[{v:2,date:'2025-04-01',note:'Added Ti adhesion layer step'},{v:1,date:'2025-01-20',note:'Initial recipe'}],
+   comments:[{author:'A. Patel',date:'2025-04-28',text:'NOTE: Rate has been dropping (0.52 → 0.42 Å/s) and base pressure is creeping. Filament replacement overdue — use e-beam for critical runs.'}]},
+
+  {id:4,name:'Si Bosch DRIE — deep trench',tool:'DRIE (Bosch)',type:'etch',material:'Si',
+   desc:'High aspect ratio deep silicon etching. Achieves >20:1 aspect ratio with scalloping <50 nm. For MEMS, TSVs, microfluidic channels.',
+   params:[['Etch step SF6','200 sccm, 2.5 s'],['Passivation C4F8','100 sccm, 2.0 s'],['ICP power','2500 W'],['Bias power','35 W'],['Pressure (etch)','30 mTorr'],['Chuck temp','20 °C']],
+   rate:3.0,runit:'µm/min',expYield:94,substrate:'4″ Si (100), 500 µm',thickness:'target 50–500 µm depth',
+   tips:'Mask selectivity ~80:1 with SPR220-7. Run SEM cross-section at 25 µm depth to verify scalloping before committing. Loading effect: rate drops ~5% per 10% increase in open area.',
+   tags:['MEMS','high-aspect-ratio','deep-etch','TSV'],
+   status:'validated',owner:'B. Novak',group:'Photonics Group',version:2,forks:4,uses:18,avgYield:93,
+   created:'2025-02-10',updated:'2025-04-22',
+   liveRate:3.0,liveDrift:0,
+   versions:[{v:2,date:'2025-04-22',note:'Reduced bias to 35 W — better scallop control'},{v:1,date:'2025-02-10',note:'Initial recipe'}],
+   comments:[{author:'R. Chen',date:'2025-04-25',text:'Used for microfluidic channels (200 µm). Rate stable, scalloping ~35 nm — within spec.'}]},
+
+  {id:5,name:'AZ1512 positive resist — standard',tool:'Mask aligner (MA6)',type:'lithography',material:'AZ1512',
+   desc:'Standard positive photoresist for features ≥2 µm. Suitable for lift-off, wet etch, and RIE masking on Si, glass, and dielectric surfaces.',
+   params:[['HMDS prime','120 °C 2 min (hotplate)'],['Spin speed','4000 rpm, 30 s'],['Softbake','100 °C 60 s (hotplate)'],['Exposure','6 s (MA6 ~10 mW/cm²)'],['Developer','MF319, 60 s, 20 °C'],['Expected thickness','~1.5 µm']],
+   rate:null,runit:null,expYield:90,substrate:'4″ Si, glass, or dielectric films',thickness:'~1.5 µm resist',
+   tips:'HMDS is mandatory on bare oxide — without it edge adhesion fails. Softbake on a levelled hotplate. Expose within 30 min of softbake. Recalculate exposure if lamp intensity has drifted.',
+   tags:['lithography','positive-resist','lift-off','etch-mask','standard'],
+   status:'validated',owner:'A. Patel',group:'Photonics Group',version:3,forks:9,uses:38,avgYield:91,
+   created:'2024-08-01',updated:'2025-04-15',
+   liveRate:null,liveDrift:null,
+   versions:[{v:3,date:'2025-04-15',note:'Added HMDS step'},{v:2,date:'2024-12-10',note:'Developer time extended to 60 s'},{v:1,date:'2024-08-01',note:'Initial recipe'}],
+   comments:[{author:'B. Novak',date:'2025-04-20',text:'For lift-off: chlorobenzene soak 60 s before development gives good undercut profile.'},{author:'R. Chen',date:'2025-03-15',text:'Exposure time needs to be 7 s on i-line stepper — do not use this recipe for stepper without adjustment.'}]},
+
+  {id:6,name:'SU-8 2025 thick film — microfluidics',tool:'Spin coater',type:'lithography',material:'SU-8 2025',
+   desc:'Thick negative photoresist for MEMS microfluidic channels and masters. Target 25 µm. Very high aspect ratio capable (>10:1).',
+   params:[['Spin speed','2000 rpm, 30 s'],['Ramp rate','300 rpm/s'],['Softbake','65 °C 1 min → 95 °C 3 min'],['Exposure dose','240 mJ/cm²'],['Post-exposure bake','65 °C 1 min → 95 °C 3 min'],['Developer','SU-8 developer, 3.5 min']],
+   rate:null,runit:null,expYield:72,substrate:'4″ Si (dehydrate 200 °C 30 min)',thickness:'~25 µm SU-8',
+   tips:'Dehydration bake is critical — most failures are adhesion-related. Ramp softbake temperature slowly or film cracks. SU-8 developer is MEK-based — LEV hood and nitrile gloves required.',
+   tags:['MEMS','microfluidics','thick-resist','negative-resist'],
+   status:'draft',owner:'B. Novak',group:'Photonics Group',version:1,forks:2,uses:5,avgYield:68,
+   created:'2025-03-01',updated:'2025-04-28',
+   liveRate:null,liveDrift:null,
+   versions:[{v:1,date:'2025-03-01',note:'Initial draft — still optimising'}],
+   comments:[{author:'A. Patel',date:'2025-04-10',text:'Had delamination at edges. 250 °C dehydration bake instead of 200 °C resolved it.'}]},
+
+  {id:7,name:'RCA clean — standard pre-process',tool:'Wet bench (acids)',type:'clean',material:'Si wafer',
+   desc:'Standard RCA-1 and RCA-2 clean before thermal oxidation, diffusion, or any high-temperature process. Removes organics, particles, and metallic contamination.',
+   params:[['RCA-1 (SC-1)','NH4OH:H2O2:H2O 1:1:5, 75 °C, 10 min'],['DI rinse','3× overflow, >18 MΩ·cm'],['HF dip (optional)','HF:H2O 1:50, 30 s'],['RCA-2 (SC-2)','HCl:H2O2:H2O 1:1:6, 75 °C, 10 min'],['DI rinse','3× overflow, spin-dry'],['Total time','~45 min']],
+   rate:null,runit:null,expYield:99,substrate:'4″ Si wafer',thickness:'n/a',
+   tips:'Prepare RCA-1 fresh — do not store. Add H2O2 last. Solutions are exothermic — heat on hotplate to 75 °C, do not exceed 80 °C. HF dip requires HF buddy protocol (Safety Guide §5).',
+   tags:['clean','pre-process','standard','CMOS-compatible','critical'],
+   status:'validated',owner:'R. Chen',group:'MEMS Lab',version:2,forks:3,uses:41,avgYield:99,
+   created:'2024-07-15',updated:'2025-02-28',
+   liveRate:null,liveDrift:null,
+   versions:[{v:2,date:'2025-02-28',note:'Added HF dip; updated for UK COSHH compliance'},{v:1,date:'2024-07-15',note:'Initial recipe'}],
+   comments:[{author:'L. Okafor',date:'2025-04-01',text:'Water break test passes every time after this clean. Essential before any thermal process.'}]},
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOOT — load from localStorage or seed
+══════════════════════════════════════════════════════════════════════════ */
+let RECIPES = load() || deepClone(SEED_RECIPES);
+if (!load()) save(RECIPES);  // write seed on first boot
+
+function updatePersistBanner() {
+  const count = RECIPES.length;
+  const userCount = RECIPES.filter(r => r.owner === CURRENT_USER).length;
+  document.getElementById('persist-msg').textContent =
+    `Data saved in your browser — ${count} recipe${count!==1?'s':''} (${userCount} yours). Persists across sessions on this device.`;
+}
+updatePersistBanner();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════════════════════════ */
+const TOOL_COLORS = {
+  'RIE etcher (Oxford)':'#185FA5','DRIE (Bosch)':'#0E7C86','PECVD':'#0F6E56',
+  'Thermal evaporator':'#854F0B','E-beam evaporator':'#533BA7',
+  'Mask aligner (MA6)':'#A32D2D','Stepper (i-line)':'#D85A30',
+  'Spin coater':'#1D9E75','Wet bench (acids)':'#639922','SEM':'#888780','Profilometer':'#888780'
+};
+const TYPE_BADGE = {'etch':'badge-blue','deposition':'badge-teal','lithography':'badge-purple','clean':'badge-amber','metrology':'badge-gray'};
+const STATUS_BADGE = {'validated':'badge-green','draft':'badge-amber','deprecated':'badge-red'};
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(n,d=1){return n==null?'—':parseFloat(n).toFixed(d);}
+function today(){return new Date().toISOString().split('T')[0];}
+function driftColor(d){if(d==null)return'#888';const a=Math.abs(d);return a<=10?'#1D9E75':a<=25?'#EF9F27':'#E24B4A';}
+
+let _tt;
+function toast(msg,err=false){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast show'+(err?' err':'');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.className='toast',2800);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VIEW SWITCHING
+══════════════════════════════════════════════════════════════════════════ */
+let currentView = 'browse';
+
+function setView(v, btn) {
+  ['browse','mine','new'].forEach(x => document.getElementById(`v-${x}`).style.display = 'none');
+  document.getElementById(`v-${v}`).style.display = 'block';
+  document.querySelectorAll('.tnav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  currentView = v;
+  closeDetail();
+  if (v === 'browse') renderLibrary();
+  if (v === 'mine') renderMine();
+  if (v === 'new') { initNewForm(); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BROWSE + SORT
+══════════════════════════════════════════════════════════════════════════ */
+let currentSort = 'popular';
+
+function setSort(btn) {
+  document.querySelectorAll('#sort-pills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  currentSort = btn.dataset.s;
+  renderLibrary();
+}
+
+function sortedRecipes(list) {
+  const c = [...list];
+  if (currentSort === 'popular') return c.sort((a,b) => b.forks - a.forks);
+  if (currentSort === 'recent')  return c.sort((a,b) => b.updated.localeCompare(a.updated));
+  if (currentSort === 'yield')   return c.sort((a,b) => b.avgYield - a.avgYield);
+  if (currentSort === 'drift')   return c.sort((a,b) => {
+    const da = a.liveDrift != null ? Math.abs(a.liveDrift) : 999;
+    const db = b.liveDrift != null ? Math.abs(b.liveDrift) : 999;
+    return da - db;
+  });
+  return c;
+}
+
+function renderLibrary() {
+  const search = (document.getElementById('search').value || '').toLowerCase();
+  const tf = document.getElementById('f-tool').value;
+  const tyf = document.getElementById('f-type').value;
+  const sf = document.getElementById('f-status').value;
+  let filtered = RECIPES.filter(r => {
+    if (tf && r.tool !== tf) return false;
+    if (tyf && r.type !== tyf) return false;
+    if (sf && r.status !== sf) return false;
+    if (search) {
+      const haystack = [r.name, r.material, r.desc, ...(r.tags||[])].join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+  const sorted = sortedRecipes(filtered);
+  document.getElementById('recipe-count').textContent = `${sorted.length} recipe${sorted.length!==1?'s':''}`;
+  const grid = document.getElementById('recipe-grid');
+  if (!sorted.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div style="font-size:28px;margin-bottom:10px">🔬</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:6px">No recipes found</div>
+      <div style="font-size:13px;margin-bottom:12px">Try adjusting your filters</div>
+      <button class="btn btn-g btn-sm" onclick="setView('new',document.getElementById('nav-new'))">Submit a new recipe</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = sorted.map(r => recipeCardHTML(r)).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RECIPE CARD
+══════════════════════════════════════════════════════════════════════════ */
+function recipeCardHTML(r) {
+  const tc = TOOL_COLORS[r.tool] || '#888';
+  const paramPreview = (r.params||[]).slice(0,4).map(p=>`${p[0]}: ${p[1]}`).join('\n')
+    + ((r.params||[]).length > 4 ? `\n…+${r.params.length-4} more` : '');
+  const rateHtml = r.liveRate != null
+    ? `<span class="rate-pill" style="background:${driftColor(r.liveDrift)}22;color:${driftColor(r.liveDrift)}">
+        Live: ${fmt(r.liveRate,2)} ${esc(r.runit||'')}${r.liveDrift!=null?' · '+(r.liveDrift>=0?'+':'')+fmt(r.liveDrift,1)+'%':''}
+       </span>`
+    : r.rate != null ? `<span style="font-size:11px;color:var(--color-text-secondary)">Target: ${fmt(r.rate,2)} ${esc(r.runit||'')}</span>` : '';
+  return `<div class="recipe-card${r.status==='validated'&&r.forks>=7?' featured':''}" onclick="openDetail(${r.id})">
+    <div style="display:flex;justify-content:space-between;gap:6px;align-items:flex-start">
+      <div>
+        <div class="rc-title">${esc(r.name)}</div>
+        <div class="rc-tool"><span class="rc-dot" style="background:${tc}"></span>${esc(r.tool)}</div>
+      </div>
+      <span class="badge ${STATUS_BADGE[r.status]||'badge-gray'}">${r.status}</span>
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      <span class="badge ${TYPE_BADGE[r.type]||'badge-gray'}">${r.type}</span>
+      ${(r.tags||[]).slice(0,2).map(t=>`<span class="badge badge-gray">${esc(t)}</span>`).join('')}
+    </div>
+    <div class="rc-params">${esc(paramPreview||'No parameters recorded yet.')}</div>
+    ${rateHtml ? `<div>${rateHtml}</div>` : ''}
+    <div class="rc-footer">
+      <div class="rc-stats">
+        <span>v${r.version}</span>
+        <span>${r.forks} fork${r.forks!==1?'s':''}</span>
+        <span>${r.uses} uses</span>
+        <span>${(r.comments||[]).length} comment${(r.comments||[]).length!==1?'s':''}</span>
+      </div>
+      <span style="font-size:11px;color:var(--color-text-secondary)">${esc(r.owner)}</span>
+    </div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DETAIL PANEL — inline, no overlay
+══════════════════════════════════════════════════════════════════════════ */
+let detailId = null, detailTab = 'params';
+
+function openDetail(id) {
+  detailId = id;
+  detailTab = 'params';
+  renderDetailHeader();
+  renderDetailTabs();
+  renderDetailContent();
+  const section = document.getElementById('detail-section');
+  section.classList.add('open');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeDetail() {
+  document.getElementById('detail-section').classList.remove('open');
+  detailId = null;
+}
+
+function getDetail() { return RECIPES.find(r => r.id === detailId); }
+
+function renderDetailHeader() {
+  const r = getDetail();
+  if (!r) return;
+  const tc = TOOL_COLORS[r.tool] || '#888';
+  const rateHtml = r.liveRate != null
+    ? `<span class="rate-pill" style="background:${driftColor(r.liveDrift)}22;color:${driftColor(r.liveDrift)};margin-left:6px">
+        Live rate: ${fmt(r.liveRate,2)} ${esc(r.runit||'')}${r.liveDrift!=null?' · '+(r.liveDrift>=0?'+':'')+fmt(r.liveDrift,1)+'% drift':''}
+       </span>` : '';
+  const isOwner = r.owner === CURRENT_USER;
+  document.getElementById('dh').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:5px">${esc(r.name)}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary)">
+            <span style="width:8px;height:8px;border-radius:50%;background:${tc};display:inline-block;flex-shrink:0"></span>${esc(r.tool)}
+          </span>
+          <span class="badge ${TYPE_BADGE[r.type]||'badge-gray'}">${r.type}</span>
+          <span class="badge ${STATUS_BADGE[r.status]||'badge-gray'}">${r.status}</span>
+          ${rateHtml}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-g btn-sm" onclick="forkRecipe(${r.id})">Fork</button>
+        ${isOwner ? `<button class="btn btn-g btn-sm" onclick="toggleValidate(${r.id})">${r.status==='draft'?'Mark validated':'Mark draft'}</button>` : ''}
+        <button class="btn btn-g btn-sm" onclick="closeDetail()">Close ×</button>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.65;margin-bottom:10px">${esc(r.desc||'')}</div>
+    <div style="display:flex;gap:14px;font-size:12px;color:var(--color-text-secondary);flex-wrap:wrap">
+      <span>Owner: <strong style="color:var(--color-text-primary)">${esc(r.owner)}</strong></span>
+      <span>v${r.version}</span>
+      <span>${r.forks} fork${r.forks!==1?'s':''}</span>
+      <span>${r.uses} uses</span>
+      <span>Updated ${r.updated}</span>
+      <span>Avg yield: <strong style="color:var(--color-text-primary)">${r.avgYield}%</strong></span>
+    </div>`;
+}
+
+function renderDetailTabs() {
+  const r = getDetail();
+  if (!r) return;
+  const tabs = [
+    {id:'params',  label:'Parameters'},
+    {id:'tips',    label:'Tips & notes'},
+    {id:'comments',label:`Comments (${(r.comments||[]).length})`},
+    {id:'history', label:`Version history (${(r.versions||[]).length})`},
+  ];
+  document.getElementById('detail-tabs').innerHTML = tabs.map(t =>
+    `<button class="tab-i${t.id===detailTab?' active':''}" onclick="switchDetailTab('${t.id}',this)">${t.label}</button>`
+  ).join('');
+}
+
+function switchDetailTab(id, btn) {
+  detailTab = id;
+  document.querySelectorAll('#detail-tabs .tab-i').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDetailContent();
+}
+
+function renderDetailContent() {
+  const r = getDetail();
+  if (!r) return;
+  const el = document.getElementById('detail-content');
+
+  if (detailTab === 'params') {
+    const rows = (r.params||[]).map(p =>
+      `<tr><td>${esc(p[0])}</td><td style="font-family:var(--font-mono);font-size:13px;color:var(--color-text-primary)">${esc(p[1])}</td></tr>`
+    ).join('');
+    const extras = [
+      r.substrate ? ['Substrate', r.substrate] : null,
+      r.thickness ? ['Film / target', r.thickness] : null,
+      r.rate != null ? ['Target rate', `${fmt(r.rate,2)} ${r.runit||''}`] : null,
+      r.expYield != null ? ['Expected yield', `${r.expYield}%`] : null,
+    ].filter(Boolean).map(([k,v]) =>
+      `<tr><td>${esc(k)}</td><td style="color:var(--color-text-primary)">${esc(v)}</td></tr>`
+    ).join('');
+    const tagsHtml = (r.tags||[]).length
+      ? `<div style="margin-top:14px;display:flex;gap:5px;flex-wrap:wrap">${r.tags.map(t=>`<span class="badge badge-gray">${esc(t)}</span>`).join('')}</div>`
+      : '';
+    el.innerHTML = `<table class="param-table">${rows}</table>
+      ${extras ? `<div class="divider"></div><table class="param-table">${extras}</table>` : ''}
+      ${tagsHtml}`;
+  }
+
+  else if (detailTab === 'tips') {
+    el.innerHTML = `<div style="font-size:13px;line-height:1.75;color:var(--color-text-primary);white-space:pre-wrap">${esc(r.tips || 'No tips recorded yet.')}</div>`;
+  }
+
+  else if (detailTab === 'comments') {
+    const bubbles = (r.comments||[]).map(c => `
+      <div class="comment-bubble">
+        <div class="comment-author">${esc(c.author)}</div>
+        <div class="comment-text">${esc(c.text)}</div>
+        <div class="comment-meta">${c.date}</div>
+      </div>`).join('') || `<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:14px">No comments yet.</div>`;
+    el.innerHTML = `${bubbles}
+      <div style="margin-top:14px;border-top:0.5px solid var(--color-border-tertiary);padding-top:14px">
+        <div style="font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Add a comment</div>
+        <textarea id="comment-input" style="height:72px;margin-bottom:8px" placeholder="Share a note, variation, or observation…"></textarea>
+        <button class="btn btn-p btn-sm" onclick="postComment(${r.id})">Post comment</button>
+      </div>`;
+  }
+
+  else if (detailTab === 'history') {
+    el.innerHTML = (r.versions||[]).map((v,i) => `
+      <div class="version-row">
+        <span class="version-dot" style="background:${i===0?'#1D9E75':'var(--color-border-secondary)'}"></span>
+        <span style="font-weight:500;min-width:28px;color:var(--color-text-primary)">v${v.v}</span>
+        <span style="color:var(--color-text-secondary);min-width:90px">${v.date}</span>
+        <span style="flex:1;color:var(--color-text-secondary)">${esc(v.note)}</span>
+        ${i===0?`<span class="badge badge-green">current</span>`:''}
+      </div>`).join('') || '<div style="font-size:13px;color:var(--color-text-secondary)">No version history.</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ACTIONS — each saves immediately after mutation
+══════════════════════════════════════════════════════════════════════════ */
+function postComment(id) {
+  const input = document.getElementById('comment-input');
+  const text = (input?.value || '').trim();
+  if (!text) { toast('Comment cannot be empty.', true); return; }
+  const r = RECIPES.find(r => r.id === id);
+  if (!r) return;
+  if (!r.comments) r.comments = [];
+  r.comments.unshift({ author: CURRENT_USER, date: today(), text });
+  save(RECIPES);
+  toast('Comment saved.');
+  renderDetailTabs();
+  renderDetailContent();
+  renderLibrary();
+}
+
+function forkRecipe(id) {
+  const r = RECIPES.find(r => r.id === id);
+  if (!r) return;
+  const forked = deepClone(r);
+  forked.id = Date.now();
+  forked.name = `${r.name} (fork)`;
+  forked.status = 'draft';
+  forked.owner = CURRENT_USER;
+  forked.version = 1;
+  forked.forks = 0;
+  forked.uses = 0;
+  forked.liveRate = null;
+  forked.liveDrift = null;
+  forked.created = today();
+  forked.updated = today();
+  forked.versions = [{ v:1, date:today(), note:`Forked from "${r.name}" v${r.version} by ${r.owner}` }];
+  forked.comments = [];
+  r.forks++;
+  RECIPES.push(forked);
+  save(RECIPES);
+  closeDetail();
+  updatePersistBanner();
+  toast(`Recipe forked — find it in "My recipes".`);
+  setView('mine', document.getElementById('nav-mine'));
+}
+
+function toggleValidate(id) {
+  const r = RECIPES.find(r => r.id === id);
+  if (!r || r.owner !== CURRENT_USER) return;
+  r.status = r.status === 'draft' ? 'validated' : 'draft';
+  r.updated = today();
+  save(RECIPES);
+  renderDetailHeader();
+  renderLibrary();
+  renderMine();
+  toast(`Recipe marked as ${r.status}.`);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MY RECIPES VIEW
+══════════════════════════════════════════════════════════════════════════ */
+function renderMine() {
+  const mine = RECIPES.filter(r => r.owner === CURRENT_USER);
+  const totalForks = mine.reduce((s,r) => s + r.forks, 0);
+  const totalUses = mine.reduce((s,r) => s + r.uses, 0);
+  const avgYield = mine.length ? Math.round(mine.reduce((s,r) => s + (r.avgYield||0), 0) / mine.length) : 0;
+  document.getElementById('my-metrics').innerHTML = `
+    <div class="metric-sm"><div class="metric-sm-val">${mine.length}</div><div class="metric-sm-lbl">My recipes</div></div>
+    <div class="metric-sm"><div class="metric-sm-val">${totalForks}</div><div class="metric-sm-lbl">Times forked</div></div>
+    <div class="metric-sm"><div class="metric-sm-val">${totalUses}</div><div class="metric-sm-lbl">Total uses</div></div>
+    <div class="metric-sm"><div class="metric-sm-val">${avgYield}%</div><div class="metric-sm-lbl">Avg yield</div></div>`;
+  const grid = document.getElementById('mine-grid');
+  if (!mine.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div style="font-size:28px;margin-bottom:10px">📋</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:12px">You haven't submitted any recipes yet</div>
+      <button class="btn btn-p btn-sm" onclick="setView('new',document.getElementById('nav-new'))">Submit your first recipe</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = sortedRecipes(mine).map(r => recipeCardHTML(r)).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEW RECIPE FORM
+══════════════════════════════════════════════════════════════════════════ */
+let paramRowCount = 0;
+
+function initNewForm() {
+  if (document.getElementById('param-rows').children.length === 0) {
+    addParamRow(); addParamRow(); addParamRow();
+  }
+}
+
+function addParamRow() {
+  paramRowCount++;
+  const id = `pr-${paramRowCount}`;
+  const row = document.createElement('div');
+  row.id = id;
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  row.innerHTML = `
+    <input type="text" placeholder="Parameter name" style="flex:1;font-size:12px" class="pr-key">
+    <input type="text" placeholder="Value and unit" style="flex:1;font-size:12px" class="pr-val">
+    <button class="btn btn-g btn-sm" style="flex-shrink:0;padding:4px 9px" onclick="document.getElementById('${id}').remove()">×</button>`;
+  document.getElementById('param-rows').appendChild(row);
+}
+
+function clearNewForm() {
+  ['n-name','n-material','n-desc','n-rate','n-yield','n-substrate','n-thickness','n-tips','n-tags']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('n-tool').selectedIndex = 0;
+  document.getElementById('n-type').selectedIndex = 0;
+  document.getElementById('param-rows').innerHTML = '';
+  paramRowCount = 0;
+  addParamRow(); addParamRow(); addParamRow();
+}
+
+function submitRecipe() {
+  const name = document.getElementById('n-name').value.trim();
+  const tool = document.getElementById('n-tool').value;
+  const type = document.getElementById('n-type').value;
+  if (!name || !tool || !type) { toast('Name, tool and type are required.', true); return; }
+
+  const params = [];
+  document.querySelectorAll('#param-rows > div').forEach(row => {
+    const k = row.querySelector('.pr-key')?.value.trim();
+    const v = row.querySelector('.pr-val')?.value.trim();
+    if (k && v) params.push([k, v]);
+  });
+
+  const tags = document.getElementById('n-tags').value
+    .split(',').map(t => t.trim()).filter(Boolean);
+
+  const recipe = {
+    id: Date.now(),
+    name, tool, type,
+    material: document.getElementById('n-material').value.trim() || '',
+    desc:     document.getElementById('n-desc').value.trim() || '',
+    params,
+    rate:      parseFloat(document.getElementById('n-rate').value) || null,
+    runit:     document.getElementById('n-runit').value,
+    expYield:  parseFloat(document.getElementById('n-yield').value) || null,
+    avgYield:  parseFloat(document.getElementById('n-yield').value) || 0,
+    substrate: document.getElementById('n-substrate').value.trim() || '',
+    thickness: document.getElementById('n-thickness').value.trim() || '',
+    tips:      document.getElementById('n-tips').value.trim() || '',
+    tags,
+    status:  'draft',
+    owner:   CURRENT_USER,
+    group:   'Photonics Group',
+    version: 1, forks: 0, uses: 0,
+    liveRate: null, liveDrift: null,
+    created: today(), updated: today(),
+    versions: [{ v:1, date:today(), note:'Initial submission' }],
+    comments: [],
+  };
+
+  RECIPES.push(recipe);
+  save(RECIPES);
+  updatePersistBanner();
+  toast('Recipe saved.');
+  clearNewForm();
+  setView('mine', document.getElementById('nav-mine'));
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════════════════ */
+renderLibrary();
+</script>
